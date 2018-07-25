@@ -24,6 +24,16 @@ public class BinanceAdapters {
     if (pair.equals(CurrencyPair.IOTA_BTC)) {
       return "IOTABTC";
     }
+
+    if (pair.equals(CurrencyPair.BCH_BTC)) {
+      return "BCCBTC";
+    }
+
+    if (pair.base.equals(Currency.BCH)) {
+      return "BCC" + pair.counter.getCurrencyCode();
+    } else if (pair.counter.equals(Currency.BCH)) {
+      return pair.base.getCurrencyCode() + "BCC";
+    }
     return pair.base.getCurrencyCode() + pair.counter.getCurrencyCode();
   }
 
@@ -31,7 +41,19 @@ public class BinanceAdapters {
     if (Currency.IOT.equals(currency)) {
       return "IOTA";
     }
+
+    if (Currency.BCH.equals(currency)) {
+      return "BCC";
+    }
+
     return currency.getSymbol();
+  }
+
+  public static Currency adaptCurrency(Currency currency) {
+    if (currency.getCurrencyCode().equals("BCC")) {
+      return Currency.BCH;
+    }
+    return currency;
   }
 
   public static OrderType convert(OrderSide side) {
@@ -92,10 +114,18 @@ public class BinanceAdapters {
   public static CurrencyPair adaptSymbol(String symbol) {
     int pairLength = symbol.length();
     if (symbol.endsWith("USDT")) {
-      return new CurrencyPair(symbol.substring(0, pairLength - 4), "USDT");
+      String base = symbol.substring(0, pairLength - 4);
+      if (base.equals("BCC")) {
+        base = "BCH";
+      }
+      return new CurrencyPair(base, "USDT");
     } else {
-      return new CurrencyPair(
-          symbol.substring(0, pairLength - 3), symbol.substring(pairLength - 3));
+      if (symbol.startsWith("BCC")) {
+        return new CurrencyPair(Currency.BCH.getCurrencyCode(), symbol.substring(pairLength - 3));
+      } else {
+        return new CurrencyPair(
+            symbol.substring(0, pairLength - 3), symbol.substring(pairLength - 3));
+      }
     }
   }
 

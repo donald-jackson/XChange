@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.knowm.xchange.Exchange;
+import org.knowm.xchange.binance.BinanceAdapters;
 import org.knowm.xchange.binance.dto.account.BinanceAccountInformation;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.dto.account.AccountInfo;
@@ -72,7 +73,12 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
     List<Balance> balances =
         acc.balances
             .stream()
-            .map(b -> new Balance(b.getCurrency(), b.getTotal(), b.getAvailable()))
+            .map(
+                b ->
+                    new Balance(
+                        BinanceAdapters.adaptCurrency(b.getCurrency()),
+                        b.getTotal(),
+                        b.getAvailable()))
             .collect(Collectors.toList());
     return new AccountInfo(new Wallet(balances));
   }
