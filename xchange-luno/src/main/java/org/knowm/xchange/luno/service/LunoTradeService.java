@@ -3,11 +3,13 @@ package org.knowm.xchange.luno.service;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.marketdata.Trades.TradeSortType;
 import org.knowm.xchange.dto.trade.LimitOrder;
@@ -20,6 +22,7 @@ import org.knowm.xchange.exceptions.NotAvailableFromExchangeException;
 import org.knowm.xchange.exceptions.NotYetImplementedForExchangeException;
 import org.knowm.xchange.luno.LunoUtil;
 import org.knowm.xchange.luno.dto.LunoBoolean;
+import org.knowm.xchange.luno.dto.trade.LunoOrders;
 import org.knowm.xchange.luno.dto.trade.LunoPostOrder;
 import org.knowm.xchange.luno.dto.trade.LunoUserTrades;
 import org.knowm.xchange.luno.dto.trade.State;
@@ -31,6 +34,7 @@ import org.knowm.xchange.service.trade.params.TradeHistoryParamLimit;
 import org.knowm.xchange.service.trade.params.TradeHistoryParams;
 import org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan;
 import org.knowm.xchange.service.trade.params.orders.OpenOrdersParams;
+import org.knowm.xchange.service.trade.params.orders.OrderQueryParams;
 
 public class LunoTradeService extends LunoBaseService implements TradeService {
 
@@ -190,6 +194,66 @@ public class LunoTradeService extends LunoBaseService implements TradeService {
   @Override
   public TradeHistoryParams createTradeHistoryParams() {
     return new LunoTradeHistoryParams();
+  }
+
+  @Override
+  public Collection<Order> getOrder(OrderQueryParams... orderQueryParams) throws IOException {
+    List<Order> orders = new ArrayList<>();
+    LunoOrders.Order lunoOrder;
+    Order normalizedOrder;
+    OrderType orderType;
+    Order.OrderStatus orderStatus;
+    for (OrderQueryParams currentOrder : orderQueryParams) {
+      lunoOrder = lunoAPI.getOrder(currentOrder.getOrderId());
+
+      if ((lunoOrder.type == org.knowm.xchange.luno.dto.trade.OrderType.ASK)
+          || (lunoOrder.type == org.knowm.xchange.luno.dto.trade.OrderType.SELL)) {
+        orderType = OrderType.ASK;
+      } else {
+        orderType = OrderType.BID;
+      }
+
+      orderStatus = Order.OrderStatus.NEW;
+
+      if (lunoOrder.state.equals(State.COMPLETE)) {
+        orderStatus = Order.OrderStatus.FILLED;
+        if (lunoOrder.base.compareTo(BigDecimal.ZERO) <= 0) {
+          orderStatus = Order.OrderStatus.CANCELED;
+        } else {
+          if (lunoOrder.limitVolume.compareTo(lunoOrder.base) != 0) {
+            orderStatus = Order.OrderStatus.CANCELED;
+          }
+        }
+      } else if (lunoOrder.state.equals(State.PENDING)) {
+        if (orderType == OrderType.BID) {
+          if (lunoOrder.base.compareTo(BigDecimal.ZERO) > 0) {
+            orderStatus = Order.OrderStatus.PARTIALLY_FILLED;
+          } else {
+            orderStatus = Order.OrderStatus.NEW;
+          }
+        } else {
+          if (lunoOrder.counter.compareTo(BigDecimal.ZERO) > 0) {
+            orderStatus = Order.OrderStatus.PARTIALLY_FILLED;
+          } else {
+            orderStatus = Order.OrderStatus.NEW;
+          }
+        }
+      }
+
+      orders.add(
+          new LimitOrder(
+              orderType,
+              lunoOrder.limitVolume,
+              LunoUtil.fromLunoPair(lunoOrder.pair),
+              lunoOrder.orderId,
+              lunoOrder.getCreationTimestamp(),
+              lunoOrder.limitPrice,
+              lunoOrder.limitPrice,
+              lunoOrder.base,
+              lunoOrder.feeBase,
+              (orderStatus)));
+    }
+    return orders;
   }
 
   public static class LunoTradeHistoryParams
