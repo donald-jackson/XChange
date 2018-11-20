@@ -5,6 +5,7 @@ import java.util.List;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.coindirect.dto.CoindirectException;
 import org.knowm.xchange.coindirect.dto.account.CoindirectAccountChannel;
+import org.knowm.xchange.coindirect.dto.account.CoindirectBalance;
 import org.knowm.xchange.coindirect.dto.account.CoindirectWallet;
 
 public class CoindirectAccountServiceRaw extends CoindirectBaseService {
@@ -20,6 +21,10 @@ public class CoindirectAccountServiceRaw extends CoindirectBaseService {
   public List<CoindirectWallet> listCoindirectWallets(long max)
       throws IOException, CoindirectException {
     return coindirect.listWallets(max, signatureCreator);
+  }
+
+  public List<CoindirectBalance> listCoindirectBalances() throws IOException, CoindirectException {
+    return coindirect.listAllBalances(signatureCreator);
   }
 
   public CoindirectAccountChannel getAccountChannel() throws IOException, CoindirectException {

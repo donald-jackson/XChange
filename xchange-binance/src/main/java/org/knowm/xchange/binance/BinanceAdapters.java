@@ -26,13 +26,13 @@ public class BinanceAdapters {
     }
 
     if (pair.equals(CurrencyPair.BCH_BTC)) {
-      return "BCCBTC";
+      return "BCHABCBTC";
     }
 
     if (pair.base.equals(Currency.BCH)) {
-      return "BCC" + pair.counter.getCurrencyCode();
+      return "BCHABC" + pair.counter.getCurrencyCode();
     } else if (pair.counter.equals(Currency.BCH)) {
-      return pair.base.getCurrencyCode() + "BCC";
+      return pair.base.getCurrencyCode() + "BCHABC";
     }
     return pair.base.getCurrencyCode() + pair.counter.getCurrencyCode();
   }
@@ -43,14 +43,14 @@ public class BinanceAdapters {
     }
 
     if (Currency.BCH.equals(currency)) {
-      return "BCC";
+      return "BCHABC";
     }
 
     return currency.getSymbol();
   }
 
   public static Currency adaptCurrency(Currency currency) {
-    if (currency.getCurrencyCode().equals("BCC")) {
+    if (currency.getCurrencyCode().equals("BCHABC")) {
       return Currency.BCH;
     }
     return currency;
@@ -115,12 +115,12 @@ public class BinanceAdapters {
     int pairLength = symbol.length();
     if (symbol.endsWith("USDT")) {
       String base = symbol.substring(0, pairLength - 4);
-      if (base.equals("BCC")) {
+      if (base.equals("BCHABC")) {
         base = "BCH";
       }
       return new CurrencyPair(base, "USDT");
     } else {
-      if (symbol.startsWith("BCC")) {
+      if (symbol.startsWith("BCHABC")) {
         return new CurrencyPair(Currency.BCH.getCurrencyCode(), symbol.substring(pairLength - 3));
       } else {
         return new CurrencyPair(
@@ -193,5 +193,9 @@ public class BinanceAdapters {
     }
     result.setOrderFlags(flags);
     return result;
+  }
+
+  public static String getBchSymbol() {
+    return "BCHABC";
   }
 }

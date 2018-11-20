@@ -6,6 +6,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import org.knowm.xchange.coindirect.dto.CoindirectException;
 import org.knowm.xchange.coindirect.dto.account.CoindirectAccountChannel;
+import org.knowm.xchange.coindirect.dto.account.CoindirectBalance;
 import org.knowm.xchange.coindirect.dto.account.CoindirectWallet;
 import org.knowm.xchange.coindirect.dto.trade.CoindirectOrder;
 import org.knowm.xchange.coindirect.dto.trade.CoindirectOrderRequest;
@@ -20,6 +21,11 @@ public interface CoindirectAuthenticated extends Coindirect {
   @Path("api/wallet")
   List<CoindirectWallet> listWallets(
       @QueryParam("max") long max, @HeaderParam("Authorization") ParamsDigest signer)
+      throws IOException, CoindirectException;
+
+  @GET
+  @Path("api/wallet/balances")
+  List<CoindirectBalance> listAllBalances(@HeaderParam("Authorization") ParamsDigest signer)
       throws IOException, CoindirectException;
 
   @GET

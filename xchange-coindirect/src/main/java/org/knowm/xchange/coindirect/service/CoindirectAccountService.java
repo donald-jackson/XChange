@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.coindirect.CoindirectAdapters;
-import org.knowm.xchange.coindirect.dto.account.CoindirectWallet;
+import org.knowm.xchange.coindirect.dto.account.CoindirectBalance;
 import org.knowm.xchange.dto.account.AccountInfo;
 import org.knowm.xchange.dto.account.Balance;
 import org.knowm.xchange.dto.account.Wallet;
@@ -25,22 +25,24 @@ public class CoindirectAccountService extends CoindirectAccountServiceRaw
 
   @Override
   public AccountInfo getAccountInfo() throws IOException {
-    List<CoindirectWallet> coindirectWallets = listCoindirectWallets(1000);
+    List<CoindirectBalance> coindirectBalances = listCoindirectBalances();
 
     Wallet wallet;
     Balance balance;
 
     List<Wallet> wallets = new ArrayList<>();
 
-    for (CoindirectWallet coindirectWallet : coindirectWallets) {
+    for (CoindirectBalance coindirectBalance : coindirectBalances) {
       balance =
           new Balance(
-              CoindirectAdapters.toCurrency(coindirectWallet.currency.code),
-              coindirectWallet.balance);
+              CoindirectAdapters.toCurrency(coindirectBalance.currency.code),
+              coindirectBalance.total,
+              coindirectBalance.available,
+              coindirectBalance.reserved);
       wallet =
           new Wallet(
-              String.valueOf(coindirectWallet.id),
-              coindirectWallet.description,
+              String.valueOf(coindirectBalance.currency.code),
+              coindirectBalance.currency.name,
               Arrays.asList(balance));
       wallets.add(wallet);
     }
