@@ -121,6 +121,12 @@ public class KrakenStreamingService extends JsonNettyStreamingService {
                 if ("ESession:Invalid session".equals(statusMessage.getErrorMessage())) {
                   throw new ExchangeException("Issue with session validity");
                 }
+                if ("Exceeded msg rate".equals(statusMessage.getErrorMessage())) {
+                  throw new ExchangeException(statusMessage.getErrorMessage());
+                }
+                if ("Subscription Not Found".equals(statusMessage.getErrorMessage())) {
+                  throw new ExchangeException(statusMessage.getErrorMessage());
+                }
             }
             break;
           case error:
