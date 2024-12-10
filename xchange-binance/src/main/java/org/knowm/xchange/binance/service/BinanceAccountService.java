@@ -42,6 +42,7 @@ import org.knowm.xchange.service.account.AccountService;
 import org.knowm.xchange.service.account.params.RequestDepositAddressParams;
 import org.knowm.xchange.service.trade.params.DefaultWithdrawFundsParams;
 import org.knowm.xchange.service.trade.params.HistoryParamsFundingType;
+import org.knowm.xchange.service.trade.params.NetworkWithdrawFundsParams;
 import org.knowm.xchange.service.trade.params.RippleWithdrawFundsParams;
 import org.knowm.xchange.service.trade.params.TradeHistoryParamCurrency;
 import org.knowm.xchange.service.trade.params.TradeHistoryParamLimit;
@@ -189,7 +190,19 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
                 rippleParams.getCurrency().getCurrencyCode(),
                 rippleParams.getAddress(),
                 rippleParams.getTag(),
-                rippleParams.getAmount());
+                rippleParams.getAmount(),
+                Currency.XRP.getCurrencyCode()
+                );
+      } else if(params instanceof NetworkWithdrawFundsParams) {
+        NetworkWithdrawFundsParams p = (NetworkWithdrawFundsParams) params;
+        withdraw =
+            super.withdraw(
+                p.getCurrency().getCurrencyCode(),
+                p.getAddress(),
+                p.getAddressTag(),
+                p.getAmount(),
+                p.getNetwork()
+                );
       } else {
         DefaultWithdrawFundsParams p = (DefaultWithdrawFundsParams) params;
         withdraw =
@@ -197,7 +210,9 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
                 p.getCurrency().getCurrencyCode(),
                 p.getAddress(),
                 p.getAddressTag(),
-                p.getAmount());
+                p.getAmount(),
+                null
+            );
       }
       return withdraw.getId();
     } catch (BinanceException e) {

@@ -68,19 +68,19 @@ public class BinanceAccountServiceRaw extends BinanceBaseService {
       throws IOException, BinanceException {
     // the name parameter seams to be mandatory
     String name = address.length() <= 10 ? address : address.substring(0, 10);
-    return withdraw(coin, address, null, amount, name);
+    return withdraw(coin, address, null, amount, name, null);
   }
 
   public WithdrawResponse withdraw(
-      String coin, String address, String addressTag, BigDecimal amount)
+      String coin, String address, String addressTag, BigDecimal amount, String network)
       throws IOException, BinanceException {
     // the name parameter seams to be mandatory
     String name = address.length() <= 10 ? address : address.substring(0, 10);
-    return withdraw(coin, address, addressTag, amount, name);
+    return withdraw(coin, address, addressTag, amount, name, network);
   }
 
   private WithdrawResponse withdraw(
-      String coin, String address, String addressTag, BigDecimal amount, String name)
+      String coin, String address, String addressTag, BigDecimal amount, String name, String network)
       throws IOException, BinanceException {
     return decorateApiCall(
             () ->
@@ -90,6 +90,7 @@ public class BinanceAccountServiceRaw extends BinanceBaseService {
                     addressTag,
                     amount,
                     name,
+                    network,
                     getRecvWindow(),
                     getTimestampFactory(),
                     apiKey,
