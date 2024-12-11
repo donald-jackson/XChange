@@ -191,9 +191,8 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
                 rippleParams.getAddress(),
                 rippleParams.getTag(),
                 rippleParams.getAmount(),
-                Currency.XRP.getCurrencyCode()
-                );
-      } else if(params instanceof NetworkWithdrawFundsParams) {
+                Currency.XRP.getCurrencyCode());
+      } else if (params instanceof NetworkWithdrawFundsParams) {
         NetworkWithdrawFundsParams p = (NetworkWithdrawFundsParams) params;
         withdraw =
             super.withdraw(
@@ -201,8 +200,7 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
                 p.getAddress(),
                 p.getAddressTag(),
                 p.getAmount(),
-                p.getNetwork()
-                );
+                p.getNetwork());
       } else {
         DefaultWithdrawFundsParams p = (DefaultWithdrawFundsParams) params;
         withdraw =
@@ -211,8 +209,7 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
                 p.getAddress(),
                 p.getAddressTag(),
                 p.getAmount(),
-                null
-            );
+                null);
       }
       return withdraw.getId();
     } catch (BinanceException e) {
@@ -236,20 +233,38 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
   }
 
   @Override
-  public AddressWithTag requestDepositAddressData(RequestDepositAddressParams requestDepositAddressParams) throws IOException {
-    if(StringUtils.isEmpty(requestDepositAddressParams.getNetwork())) {
-      return requestDepositAddressData(requestDepositAddressParams.getCurrency(), requestDepositAddressParams.getExtraArguments());
+  public AddressWithTag requestDepositAddressData(
+      RequestDepositAddressParams requestDepositAddressParams) throws IOException {
+    if (StringUtils.isEmpty(requestDepositAddressParams.getNetwork())) {
+      return requestDepositAddressData(
+          requestDepositAddressParams.getCurrency(),
+          requestDepositAddressParams.getExtraArguments());
     }
 
-    BinanceCurrencyInfo binanceCurrencyInfo = super.getCurrencyInfo(requestDepositAddressParams.getCurrency()).orElseThrow(() -> new IllegalArgumentException("Currency not supported: " + requestDepositAddressParams.getCurrency()));
+    BinanceCurrencyInfo binanceCurrencyInfo =
+        super.getCurrencyInfo(requestDepositAddressParams.getCurrency())
+            .orElseThrow(
+                () ->
+                    new IllegalArgumentException(
+                        "Currency not supported: " + requestDepositAddressParams.getCurrency()));
 
-    Network binanceNetwork = binanceCurrencyInfo.getNetworks()
-        .stream()
-        .filter(network -> requestDepositAddressParams.getNetwork().equals(network.getId()) || network.getId().equals(requestDepositAddressParams.getCurrency().getCurrencyCode()))
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Network not supported: " + requestDepositAddressParams.getNetwork()));
+    Network binanceNetwork =
+        binanceCurrencyInfo.getNetworks().stream()
+            .filter(
+                network ->
+                    requestDepositAddressParams.getNetwork().equals(network.getId())
+                        || network
+                            .getId()
+                            .equals(requestDepositAddressParams.getCurrency().getCurrencyCode()))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new IllegalArgumentException(
+                        "Network not supported: " + requestDepositAddressParams.getNetwork()));
 
-    DepositAddress depositAddress = super.requestDepositAddressWithNetwork(requestDepositAddressParams.getCurrency(), binanceNetwork.getId());
+    DepositAddress depositAddress =
+        super.requestDepositAddressWithNetwork(
+            requestDepositAddressParams.getCurrency(), binanceNetwork.getId());
 
     return prepareAddressWithTag(depositAddress);
   }
@@ -263,11 +278,10 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
   }
 
   @Override
-  public String requestDepositAddress(RequestDepositAddressParams requestDepositAddressParams) throws IOException {
+  public String requestDepositAddress(RequestDepositAddressParams requestDepositAddressParams)
+      throws IOException {
     return requestDepositAddressData(requestDepositAddressParams).getAddress();
   }
-
-
 
   public Map<String, AssetDetail> getAssetDetails() throws IOException {
     try {

@@ -80,7 +80,12 @@ public class BinanceAccountServiceRaw extends BinanceBaseService {
   }
 
   private WithdrawResponse withdraw(
-      String coin, String address, String addressTag, BigDecimal amount, String name, String network)
+      String coin,
+      String address,
+      String addressTag,
+      BigDecimal amount,
+      String name,
+      String network)
       throws IOException, BinanceException {
     return decorateApiCall(
             () ->
@@ -104,7 +109,8 @@ public class BinanceAccountServiceRaw extends BinanceBaseService {
     return requestDepositAddressWithNetwork(currency, null);
   }
 
-  public DepositAddress requestDepositAddressWithNetwork(Currency currency, String network) throws IOException {
+  public DepositAddress requestDepositAddressWithNetwork(Currency currency, String network)
+      throws IOException {
     return decorateApiCall(
             () ->
                 binance.depositAddress(
