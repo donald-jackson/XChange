@@ -1,0 +1,161 @@
+{
+  "currency_pairs": {
+    "BTC/PHP": {
+      "price_scale": 2,
+      "min_amount": 0.0000001,
+      "trading_fee": 0.001
+    },
+    "BTC/USDT": {
+      "price_scale": 2,
+      "min_amount": 0.0000001,
+      "trading_fee": 0.001
+    },
+    "ETH/PHP": {
+      "price_scale": 2,
+      "min_amount": 0.001,
+      "trading_fee": 0.001
+    },
+    "ETH/USDT": {
+      "price_scale": 2,
+      "min_amount": 0.001,
+      "trading_fee": 0.001
+    },
+    "LTC/PHP": {
+      "price_scale": 1,
+      "min_amount": 0.001,
+      "trading_fee": 0.001
+    },
+    "DOGE/USDT": {
+      "price_scale": 5,
+      "min_amount": 0.01,
+      "trading_fee": 0.001
+    },
+    "SHIB/PHP": {
+      "price_scale": 7,
+      "min_amount": 1,
+      "trading_fee": 0.001
+    },
+    "SHIB/USDT": {
+      "price_scale": 8,
+      "min_amount": 1,
+      "trading_fee": 0.001
+    },
+    "PEPE/USDT": {
+      "price_scale": 8,
+      "min_amount": 1,
+      "trading_fee": 0.001
+    },
+    "DOG/PHP": {
+      "price_scale": 4,
+      "min_amount": 1,
+      "trading_fee": 0.001
+    },
+    "IMX/PHP": {
+      "price_scale": 3,
+      "min_amount": 0.1,
+      "trading_fee": 0.001
+    },
+    "UNI/USDT": {
+      "price_scale": 3,
+      "min_amount": 0.001,
+      "trading_fee": 0.001
+    },
+    "ETHFI/PHP": {
+      "price_scale": 4,
+      "min_amount": 0.01,
+      "trading_fee": 0.001
+    },
+    "MBX/PHP": {
+      "price_scale": 3,
+      "min_amount": 0.1,
+      "trading_fee": 0.001
+    },
+    "SPX/PHP": {
+      "price_scale": 3,
+      "min_amount": 0.1,
+      "trading_fee": 0.001
+    },
+    "ATLAS/PHP": {
+      "price_scale": 5,
+      "min_amount": 1,
+      "trading_fee": 0.001
+    }
+  },
+  "currencies": {
+    "BTC": {
+      "scale": 8,
+      "withdrawal_fee": 0.0005
+    },
+    "ETH": {
+      "scale": 8,
+      "withdrawal_fee": 0.005
+    },
+    "LTC": {
+      "scale": 8,
+      "withdrawal_fee": 0.01
+    },
+    "DOGE": {
+      "scale": 8,
+      "withdrawal_fee": 5
+    },
+    "SHIB": {
+      "scale": 8,
+      "withdrawal_fee": 100000
+    },
+    "PEPE": {
+      "scale": 8,
+      "withdrawal_fee": 100000
+    },
+    "DOG": {
+      "scale": 8,
+      "withdrawal_fee": 100
+    },
+    "IMX": {
+      "scale": 8,
+      "withdrawal_fee": 1
+    },
+    "UNI": {
+      "scale": 8,
+      "withdrawal_fee": 1
+    },
+    "ETHFI": {
+      "scale": 8,
+      "withdrawal_fee": 1
+    },
+    "MBX": {
+      "scale": 8,
+      "withdrawal_fee": 1
+    },
+    "SPX": {
+      "scale": 8,
+      "withdrawal_fee": 1
+    },
+    "ATLAS": {
+      "scale": 8,
+      "withdrawal_fee": 100
+    },
+    "PHP": {
+      "scale": 2,
+      "withdrawal_fee": 0
+    },
+    "USDT": {
+      "scale": 6,
+      "withdrawal_fee": 1
+    }
+  },
+  "private_rate_limits": [
+    {
+      "calls": 10,
+      "time_span": 1,
+      "time_unit": "SECONDS"
+    }
+  ],
+  "public_rate_limits": [
+    {
+      "calls": 20,
+      "time_span": 1,
+      "time_unit": "SECONDS"
+    }
+  ],
+  "share_rate_limits": true
+}
