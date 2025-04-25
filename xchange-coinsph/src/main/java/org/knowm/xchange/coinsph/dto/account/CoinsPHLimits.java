@@ -1,11 +1,18 @@
 package org.knowm.xchange.coinsph.dto.account;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Account limits information from Coins.ph
  */
+@Getter
+@ToString
 public class CoinsPHLimits {
 
   private final BigDecimal cashInLimit;
@@ -14,6 +21,7 @@ public class CoinsPHLimits {
   private final BigDecimal cashOutRemaining;
   private final BigDecimal totalWithdrawLimit;
   private final BigDecimal totalWithdrawRemaining;
+  private final Map<String, Object> additionalProperties = new HashMap<>();
 
   public CoinsPHLimits(
       @JsonProperty("cashInLimit") BigDecimal cashInLimit,
@@ -29,46 +37,9 @@ public class CoinsPHLimits {
     this.totalWithdrawLimit = totalWithdrawLimit;
     this.totalWithdrawRemaining = totalWithdrawRemaining;
   }
-
-  public BigDecimal getCashInLimit() {
-    return cashInLimit;
-  }
-
-  public BigDecimal getCashInRemaining() {
-    return cashInRemaining;
-  }
-
-  public BigDecimal getCashOutLimit() {
-    return cashOutLimit;
-  }
-
-  public BigDecimal getCashOutRemaining() {
-    return cashOutRemaining;
-  }
-
-  public BigDecimal getTotalWithdrawLimit() {
-    return totalWithdrawLimit;
-  }
-
-  public BigDecimal getTotalWithdrawRemaining() {
-    return totalWithdrawRemaining;
-  }
-
-  @Override
-  public String toString() {
-    return "CoinsPHLimits{"
-        + "cashInLimit="
-        + cashInLimit
-        + ", cashInRemaining="
-        + cashInRemaining
-        + ", cashOutLimit="
-        + cashOutLimit
-        + ", cashOutRemaining="
-        + cashOutRemaining
-        + ", totalWithdrawLimit="
-        + totalWithdrawLimit
-        + ", totalWithdrawRemaining="
-        + totalWithdrawRemaining
-        + '}';
+  
+  @JsonAnySetter
+  public void setAdditionalProperty(String name, Object value) {
+    this.additionalProperties.put(name, value);
   }
 }

@@ -1,11 +1,18 @@
 package org.knowm.xchange.coinsph.dto.account;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Account information from Coins.ph
  */
+@Getter
+@ToString
 public class CoinsPHAccountInfo {
 
   private final String accountType;
@@ -18,6 +25,7 @@ public class CoinsPHAccountInfo {
   private final CoinsPHLimits monthly;
   private final CoinsPHLimits annually;
   private final long updateTime;
+  private final Map<String, Object> additionalProperties = new HashMap<>();
 
   public CoinsPHAccountInfo(
       @JsonProperty("accountType") String accountType,
@@ -41,66 +49,9 @@ public class CoinsPHAccountInfo {
     this.annually = annually;
     this.updateTime = updateTime;
   }
-
-  public String getAccountType() {
-    return accountType;
-  }
-
-  public boolean isCanDeposit() {
-    return canDeposit;
-  }
-
-  public boolean isCanTrade() {
-    return canTrade;
-  }
-
-  public boolean isCanWithdraw() {
-    return canWithdraw;
-  }
-
-  public List<CoinsPHBalance> getBalances() {
-    return balances;
-  }
-
-  public String getToken() {
-    return token;
-  }
-
-  public CoinsPHLimits getDaily() {
-    return daily;
-  }
-
-  public CoinsPHLimits getMonthly() {
-    return monthly;
-  }
-
-  public CoinsPHLimits getAnnually() {
-    return annually;
-  }
-
-  public long getUpdateTime() {
-    return updateTime;
-  }
-
-  @Override
-  public String toString() {
-    return "CoinsPHAccountInfo{"
-        + "accountType='"
-        + accountType
-        + '\''
-        + ", canDeposit="
-        + canDeposit
-        + ", canTrade="
-        + canTrade
-        + ", canWithdraw="
-        + canWithdraw
-        + ", balances="
-        + balances
-        + ", token='"
-        + token
-        + '\''
-        + ", updateTime="
-        + updateTime
-        + '}';
+  
+  @JsonAnySetter
+  public void setAdditionalProperty(String name, Object value) {
+    this.additionalProperties.put(name, value);
   }
 }

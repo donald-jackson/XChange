@@ -1,10 +1,17 @@
 package org.knowm.xchange.coinsph.dto.account;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Withdraw request for Coins.ph
  */
+@Getter
+@ToString
 public class CoinsPHWithdrawRequest {
 
   private final String coin;
@@ -13,6 +20,7 @@ public class CoinsPHWithdrawRequest {
   private final String addressTag;
   private final BigDecimal amount;
   private final String withdrawOrderId;
+  private final Map<String, Object> additionalProperties = new HashMap<>();
 
   public CoinsPHWithdrawRequest(
       String coin,
@@ -28,28 +36,9 @@ public class CoinsPHWithdrawRequest {
     this.amount = amount;
     this.withdrawOrderId = withdrawOrderId;
   }
-
-  public String getCoin() {
-    return coin;
-  }
-
-  public String getNetwork() {
-    return network;
-  }
-
-  public String getAddress() {
-    return address;
-  }
-
-  public String getAddressTag() {
-    return addressTag;
-  }
-
-  public BigDecimal getAmount() {
-    return amount;
-  }
-
-  public String getWithdrawOrderId() {
-    return withdrawOrderId;
+  
+  @JsonAnySetter
+  public void setAdditionalProperty(String name, Object value) {
+    this.additionalProperties.put(name, value);
   }
 }

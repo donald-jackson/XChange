@@ -1,12 +1,19 @@
 package org.knowm.xchange.coinsph.dto.trade;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Order response from Coins.ph
  */
+@Getter
+@ToString(of = {"symbol", "orderId", "clientOrderId", "status", "type", "side"})
 public class CoinsPHOrderResponse {
 
   private final String symbol;
@@ -24,6 +31,7 @@ public class CoinsPHOrderResponse {
   private final BigDecimal stopPrice;
   private final BigDecimal origQuoteOrderQty;
   private final List<CoinsPHOrderFill> fills;
+  private final Map<String, Object> additionalProperties = new HashMap<>();
 
   public CoinsPHOrderResponse(
       @JsonProperty("symbol") String symbol,
@@ -57,99 +65,24 @@ public class CoinsPHOrderResponse {
     this.origQuoteOrderQty = origQuoteOrderQty;
     this.fills = fills;
   }
-
-  public String getSymbol() {
-    return symbol;
-  }
-
-  public long getOrderId() {
-    return orderId;
-  }
-
-  public String getClientOrderId() {
-    return clientOrderId;
-  }
-
-  public long getTransactTime() {
-    return transactTime;
-  }
-
-  public BigDecimal getPrice() {
-    return price;
-  }
-
-  public BigDecimal getOrigQty() {
-    return origQty;
-  }
-
-  public BigDecimal getExecutedQty() {
-    return executedQty;
-  }
-
-  public BigDecimal getCummulativeQuoteQty() {
-    return cummulativeQuoteQty;
-  }
-
-  public String getStatus() {
-    return status;
-  }
-
-  public String getTimeInForce() {
-    return timeInForce;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public String getSide() {
-    return side;
-  }
-
-  public BigDecimal getStopPrice() {
-    return stopPrice;
-  }
-
-  public BigDecimal getOrigQuoteOrderQty() {
-    return origQuoteOrderQty;
-  }
-
-  public List<CoinsPHOrderFill> getFills() {
-    return fills;
-  }
-
-  @Override
-  public String toString() {
-    return "CoinsPHOrderResponse{"
-        + "symbol='"
-        + symbol
-        + '\''
-        + ", orderId="
-        + orderId
-        + ", clientOrderId='"
-        + clientOrderId
-        + '\''
-        + ", status='"
-        + status
-        + '\''
-        + ", type='"
-        + type
-        + '\''
-        + ", side='"
-        + side
-        + '\''
-        + '}';
+  
+  @JsonAnySetter
+  public void setAdditionalProperty(String name, Object value) {
+    this.additionalProperties.put(name, value);
   }
 
   /**
    * Order fill information
    */
+  @Getter
+  @ToString
   public static class CoinsPHOrderFill {
     private final BigDecimal price;
     private final BigDecimal qty;
     private final BigDecimal commission;
     private final String commissionAsset;
     private final String tradeId;
+    private final Map<String, Object> additionalProperties = new HashMap<>();
 
     public CoinsPHOrderFill(
         @JsonProperty("price") BigDecimal price,
@@ -163,25 +96,10 @@ public class CoinsPHOrderResponse {
       this.commissionAsset = commissionAsset;
       this.tradeId = tradeId;
     }
-
-    public BigDecimal getPrice() {
-      return price;
-    }
-
-    public BigDecimal getQty() {
-      return qty;
-    }
-
-    public BigDecimal getCommission() {
-      return commission;
-    }
-
-    public String getCommissionAsset() {
-      return commissionAsset;
-    }
-
-    public String getTradeId() {
-      return tradeId;
+    
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+      this.additionalProperties.put(name, value);
     }
   }
 }

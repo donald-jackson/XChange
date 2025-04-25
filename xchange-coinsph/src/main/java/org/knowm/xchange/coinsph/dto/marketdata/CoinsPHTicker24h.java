@@ -1,11 +1,18 @@
 package org.knowm.xchange.coinsph.dto.marketdata;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * 24hr ticker price change statistics for a symbol
  */
+@Getter
+@ToString(includeFieldNames = true, of = {"symbol", "lastPrice", "bidPrice", "askPrice", "volume"})
 public class CoinsPHTicker24h {
 
   private final String symbol;
@@ -29,6 +36,7 @@ public class CoinsPHTicker24h {
   private final long firstId;
   private final long lastId;
   private final long count;
+  private final Map<String, Object> additionalProperties = new HashMap<>();
 
   public CoinsPHTicker24h(
       @JsonProperty("symbol") String symbol,
@@ -74,105 +82,9 @@ public class CoinsPHTicker24h {
     this.lastId = lastId;
     this.count = count;
   }
-
-  public String getSymbol() {
-    return symbol;
-  }
-
-  public BigDecimal getPriceChange() {
-    return priceChange;
-  }
-
-  public BigDecimal getPriceChangePercent() {
-    return priceChangePercent;
-  }
-
-  public BigDecimal getWeightedAvgPrice() {
-    return weightedAvgPrice;
-  }
-
-  public BigDecimal getPrevClosePrice() {
-    return prevClosePrice;
-  }
-
-  public BigDecimal getLastPrice() {
-    return lastPrice;
-  }
-
-  public BigDecimal getLastQty() {
-    return lastQty;
-  }
-
-  public BigDecimal getBidPrice() {
-    return bidPrice;
-  }
-
-  public BigDecimal getBidQty() {
-    return bidQty;
-  }
-
-  public BigDecimal getAskPrice() {
-    return askPrice;
-  }
-
-  public BigDecimal getAskQty() {
-    return askQty;
-  }
-
-  public BigDecimal getOpenPrice() {
-    return openPrice;
-  }
-
-  public BigDecimal getHighPrice() {
-    return highPrice;
-  }
-
-  public BigDecimal getLowPrice() {
-    return lowPrice;
-  }
-
-  public BigDecimal getVolume() {
-    return volume;
-  }
-
-  public BigDecimal getQuoteVolume() {
-    return quoteVolume;
-  }
-
-  public long getOpenTime() {
-    return openTime;
-  }
-
-  public long getCloseTime() {
-    return closeTime;
-  }
-
-  public long getFirstId() {
-    return firstId;
-  }
-
-  public long getLastId() {
-    return lastId;
-  }
-
-  public long getCount() {
-    return count;
-  }
-
-  @Override
-  public String toString() {
-    return "CoinsPHTicker24h{"
-        + "symbol='"
-        + symbol
-        + '\''
-        + ", lastPrice="
-        + lastPrice
-        + ", bidPrice="
-        + bidPrice
-        + ", askPrice="
-        + askPrice
-        + ", volume="
-        + volume
-        + '}';
+  
+  @JsonAnySetter
+  public void setAdditionalProperty(String name, Object value) {
+    this.additionalProperties.put(name, value);
   }
 }

@@ -1,10 +1,17 @@
 package org.knowm.xchange.coinsph.dto.trade;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * New order request for Coins.ph
  */
+@Getter
+@ToString
 public class CoinsPHNewOrder {
 
   private final String symbol;
@@ -17,6 +24,7 @@ public class CoinsPHNewOrder {
   private final String newClientOrderId;
   private final BigDecimal stopPrice;
   private final String newOrderRespType;
+  private final Map<String, Object> additionalProperties = new HashMap<>();
 
   public CoinsPHNewOrder(
       String symbol,
@@ -40,44 +48,9 @@ public class CoinsPHNewOrder {
     this.stopPrice = stopPrice;
     this.newOrderRespType = newOrderRespType;
   }
-
-  public String getSymbol() {
-    return symbol;
-  }
-
-  public String getSide() {
-    return side;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public String getTimeInForce() {
-    return timeInForce;
-  }
-
-  public BigDecimal getQuantity() {
-    return quantity;
-  }
-
-  public BigDecimal getQuoteOrderQty() {
-    return quoteOrderQty;
-  }
-
-  public BigDecimal getPrice() {
-    return price;
-  }
-
-  public String getNewClientOrderId() {
-    return newClientOrderId;
-  }
-
-  public BigDecimal getStopPrice() {
-    return stopPrice;
-  }
-
-  public String getNewOrderRespType() {
-    return newOrderRespType;
+  
+  @JsonAnySetter
+  public void setAdditionalProperty(String name, Object value) {
+    this.additionalProperties.put(name, value);
   }
 }

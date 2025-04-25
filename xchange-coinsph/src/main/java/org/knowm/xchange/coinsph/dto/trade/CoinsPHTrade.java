@@ -1,11 +1,18 @@
 package org.knowm.xchange.coinsph.dto.trade;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Trade information from Coins.ph
  */
+@Getter
+@ToString(of = {"symbol", "id", "orderId", "price", "qty", "time"})
 public class CoinsPHTrade {
 
   private final String symbol;
@@ -20,6 +27,7 @@ public class CoinsPHTrade {
   private final boolean isBuyer;
   private final boolean isMaker;
   private final boolean isBestMatch;
+  private final Map<String, Object> additionalProperties = new HashMap<>();
 
   public CoinsPHTrade(
       @JsonProperty("symbol") String symbol,
@@ -47,71 +55,9 @@ public class CoinsPHTrade {
     this.isMaker = isMaker;
     this.isBestMatch = isBestMatch;
   }
-
-  public String getSymbol() {
-    return symbol;
-  }
-
-  public long getId() {
-    return id;
-  }
-
-  public long getOrderId() {
-    return orderId;
-  }
-
-  public BigDecimal getPrice() {
-    return price;
-  }
-
-  public BigDecimal getQty() {
-    return qty;
-  }
-
-  public BigDecimal getQuoteQty() {
-    return quoteQty;
-  }
-
-  public BigDecimal getCommission() {
-    return commission;
-  }
-
-  public String getCommissionAsset() {
-    return commissionAsset;
-  }
-
-  public long getTime() {
-    return time;
-  }
-
-  public boolean isBuyer() {
-    return isBuyer;
-  }
-
-  public boolean isMaker() {
-    return isMaker;
-  }
-
-  public boolean isBestMatch() {
-    return isBestMatch;
-  }
-
-  @Override
-  public String toString() {
-    return "CoinsPHTrade{"
-        + "symbol='"
-        + symbol
-        + '\''
-        + ", id="
-        + id
-        + ", orderId="
-        + orderId
-        + ", price="
-        + price
-        + ", qty="
-        + qty
-        + ", time="
-        + time
-        + '}';
+  
+  @JsonAnySetter
+  public void setAdditionalProperty(String name, Object value) {
+    this.additionalProperties.put(name, value);
   }
 }

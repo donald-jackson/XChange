@@ -1,11 +1,18 @@
 package org.knowm.xchange.coinsph.dto.trade;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Cancel order response from Coins.ph
  */
+@Getter
+@ToString(of = {"symbol", "orderId", "clientOrderId", "status"})
 public class CoinsPHCancelOrderResponse {
 
   private final String symbol;
@@ -21,6 +28,7 @@ public class CoinsPHCancelOrderResponse {
   private final String side;
   private final BigDecimal stopPrice;
   private final BigDecimal origQuoteOrderQty;
+  private final Map<String, Object> additionalProperties = new HashMap<>();
 
   public CoinsPHCancelOrderResponse(
       @JsonProperty("symbol") String symbol,
@@ -50,73 +58,9 @@ public class CoinsPHCancelOrderResponse {
     this.stopPrice = stopPrice;
     this.origQuoteOrderQty = origQuoteOrderQty;
   }
-
-  public String getSymbol() {
-    return symbol;
-  }
-
-  public long getOrderId() {
-    return orderId;
-  }
-
-  public String getClientOrderId() {
-    return clientOrderId;
-  }
-
-  public BigDecimal getPrice() {
-    return price;
-  }
-
-  public BigDecimal getOrigQty() {
-    return origQty;
-  }
-
-  public BigDecimal getExecutedQty() {
-    return executedQty;
-  }
-
-  public BigDecimal getCummulativeQuoteQty() {
-    return cummulativeQuoteQty;
-  }
-
-  public String getStatus() {
-    return status;
-  }
-
-  public String getTimeInForce() {
-    return timeInForce;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public String getSide() {
-    return side;
-  }
-
-  public BigDecimal getStopPrice() {
-    return stopPrice;
-  }
-
-  public BigDecimal getOrigQuoteOrderQty() {
-    return origQuoteOrderQty;
-  }
-
-  @Override
-  public String toString() {
-    return "CoinsPHCancelOrderResponse{"
-        + "symbol='"
-        + symbol
-        + '\''
-        + ", orderId="
-        + orderId
-        + ", clientOrderId='"
-        + clientOrderId
-        + '\''
-        + ", status='"
-        + status
-        + '\''
-        + '}';
+  
+  @JsonAnySetter
+  public void setAdditionalProperty(String name, Object value) {
+    this.additionalProperties.put(name, value);
   }
 }
