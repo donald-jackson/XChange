@@ -1,16 +1,14 @@
 package org.knowm.xchange.coinsph.dto.account;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * Balance information from Coins.ph
- */
+/** Balance information from Coins.ph */
 @Getter
 @ToString
 public class CoinsPHBalance {
@@ -28,7 +26,7 @@ public class CoinsPHBalance {
     this.free = free;
     this.locked = locked;
   }
-  
+
   @JsonAnySetter
   public void setAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);

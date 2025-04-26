@@ -2,16 +2,13 @@ package org.knowm.xchange.coinsph.service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.coinsph.dto.account.CoinsPHAccountInfo;
 import org.knowm.xchange.coinsph.dto.account.CoinsPHDepositAddress;
 import org.knowm.xchange.coinsph.dto.account.CoinsPHWithdrawResponse;
 import org.knowm.xchange.currency.Currency;
 
-/**
- * Implementation of the account service for Coins.ph
- */
+/** Implementation of the account service for Coins.ph */
 public class CoinsPHAccountServiceRaw extends CoinsPHBaseService {
 
   /**
@@ -42,10 +39,15 @@ public class CoinsPHAccountServiceRaw extends CoinsPHBaseService {
    * @return the deposit address
    * @throws IOException if an error occurs
    */
-  public CoinsPHDepositAddress getCoinsPHDepositAddress(Currency currency, String network) throws IOException {
+  public CoinsPHDepositAddress getCoinsPHDepositAddress(Currency currency, String network)
+      throws IOException {
     return coinsPHAuthenticated.getDepositAddress(
-        apiKey, currency.getCurrencyCode(), network, getRecvWindow(), 
-        exchange.getNonceFactory().createValue(), signatureCreator);
+        apiKey,
+        currency.getCurrencyCode(),
+        network,
+        getRecvWindow(),
+        exchange.getNonceFactory().createValue(),
+        signatureCreator);
   }
 
   /**
@@ -66,7 +68,8 @@ public class CoinsPHAccountServiceRaw extends CoinsPHBaseService {
       String address,
       String addressTag,
       BigDecimal amount,
-      String withdrawOrderId) throws IOException {
+      String withdrawOrderId)
+      throws IOException {
     return coinsPHAuthenticated.withdraw(
         apiKey,
         currency.getCurrencyCode(),

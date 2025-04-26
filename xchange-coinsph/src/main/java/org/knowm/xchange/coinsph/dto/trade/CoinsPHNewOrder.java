@@ -1,15 +1,13 @@
 package org.knowm.xchange.coinsph.dto.trade;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * New order request for Coins.ph
- */
+/** New order request for Coins.ph */
 @Getter
 @ToString
 public class CoinsPHNewOrder {
@@ -48,7 +46,7 @@ public class CoinsPHNewOrder {
     this.stopPrice = stopPrice;
     this.newOrderRespType = newOrderRespType;
   }
-  
+
   @JsonAnySetter
   public void setAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);

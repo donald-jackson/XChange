@@ -3,10 +3,8 @@ package org.knowm.xchange.coinsph.service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.coinsph.dto.trade.CoinsPHCancelOrderResponse;
-import org.knowm.xchange.coinsph.dto.trade.CoinsPHNewOrder;
 import org.knowm.xchange.coinsph.dto.trade.CoinsPHOrder;
 import org.knowm.xchange.coinsph.dto.trade.CoinsPHOrderResponse;
 import org.knowm.xchange.coinsph.dto.trade.CoinsPHTrade;
@@ -15,10 +13,9 @@ import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.MarketOrder;
+import org.knowm.xchange.instrument.Instrument;
 
-/**
- * Implementation of the trade service for Coins.ph
- */
+/** Implementation of the trade service for Coins.ph */
 public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
 
   /**
@@ -40,7 +37,7 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
   public CoinsPHOrderResponse placeCoinsPHLimitOrder(LimitOrder limitOrder) throws IOException {
     return coinsPHAuthenticated.newOrder(
         apiKey,
-        formatSymbol(limitOrder.getCurrencyPair()),
+        formatSymbol(limitOrder.getInstrument()),
         limitOrder.getType() == OrderType.BID ? "BUY" : "SELL",
         "LIMIT",
         "GTC",
@@ -65,7 +62,7 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
   public CoinsPHOrderResponse placeCoinsPHMarketOrder(MarketOrder marketOrder) throws IOException {
     return coinsPHAuthenticated.newOrder(
         apiKey,
-        formatSymbol(marketOrder.getCurrencyPair()),
+        formatSymbol(marketOrder.getInstrument()),
         marketOrder.getType() == OrderType.BID ? "BUY" : "SELL",
         "MARKET",
         null,
@@ -83,15 +80,16 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
   /**
    * Cancel an order
    *
-   * @param currencyPair the currency pair
+   * @param instrument the instrument
    * @param orderId the order id
    * @return the cancel order response
    * @throws IOException if an error occurs
    */
-  public CoinsPHCancelOrderResponse cancelCoinsPHOrder(CurrencyPair currencyPair, long orderId) throws IOException {
+  public CoinsPHCancelOrderResponse cancelCoinsPHOrder(Instrument instrument, long orderId)
+      throws IOException {
     return coinsPHAuthenticated.cancelOrder(
         apiKey,
-        formatSymbol(currencyPair),
+        instrument != null ? formatSymbol(instrument) : null,
         orderId,
         null,
         getRecvWindow(),
@@ -102,15 +100,15 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
   /**
    * Get order status
    *
-   * @param currencyPair the currency pair
+   * @param instrument the instrument
    * @param orderId the order id
    * @return the order
    * @throws IOException if an error occurs
    */
-  public CoinsPHOrder getCoinsPHOrder(CurrencyPair currencyPair, long orderId) throws IOException {
+  public CoinsPHOrder getCoinsPHOrder(Instrument instrument, long orderId) throws IOException {
     return coinsPHAuthenticated.getOrder(
         apiKey,
-        formatSymbol(currencyPair),
+        formatSymbol(instrument),
         orderId,
         null,
         getRecvWindow(),
@@ -121,14 +119,14 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
   /**
    * Get open orders
    *
-   * @param currencyPair the currency pair
+   * @param instrument the instrument
    * @return the open orders
    * @throws IOException if an error occurs
    */
-  public List<CoinsPHOrder> getCoinsPHOpenOrders(CurrencyPair currencyPair) throws IOException {
+  public List<CoinsPHOrder> getCoinsPHOpenOrders(Instrument instrument) throws IOException {
     return coinsPHAuthenticated.getOpenOrders(
         apiKey,
-        currencyPair != null ? formatSymbol(currencyPair) : null,
+        instrument != null ? formatSymbol(instrument) : null,
         getRecvWindow(),
         exchange.getNonceFactory().createValue(),
         signatureCreator);
@@ -137,15 +135,16 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
   /**
    * Get order history
    *
-   * @param currencyPair the currency pair
+   * @param instrument the instrument
    * @param limit the limit of orders to return
    * @return the order history
    * @throws IOException if an error occurs
    */
-  public List<CoinsPHOrder> getCoinsPHOrderHistory(CurrencyPair currencyPair, Integer limit) throws IOException {
+  public List<CoinsPHOrder> getCoinsPHOrderHistory(Instrument instrument, Integer limit)
+      throws IOException {
     return coinsPHAuthenticated.getHistoryOrders(
         apiKey,
-        formatSymbol(currencyPair),
+        formatSymbol(instrument),
         null,
         null,
         null,
@@ -158,15 +157,16 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
   /**
    * Get trade history
    *
-   * @param currencyPair the currency pair
+   * @param instrument the instrument
    * @param limit the limit of trades to return
    * @return the trade history
    * @throws IOException if an error occurs
    */
-  public List<CoinsPHTrade> getCoinsPHTradeHistory(CurrencyPair currencyPair, Integer limit) throws IOException {
+  public List<CoinsPHTrade> getCoinsPHTradeHistory(Instrument instrument, Integer limit)
+      throws IOException {
     return coinsPHAuthenticated.getMyTrades(
         apiKey,
-        formatSymbol(currencyPair),
+        formatSymbol(instrument),
         null,
         null,
         null,
@@ -210,13 +210,17 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
   }
 
   /**
-   * Format currency pair to Coins.ph symbol format
+   * Format instrument to Coins.ph symbol format
    *
-   * @param currencyPair the currency pair
+   * @param instrument the instrument
    * @return the formatted symbol
    */
-  private String formatSymbol(CurrencyPair currencyPair) {
-    return currencyPair.getBase().getCurrencyCode() + currencyPair.getCounter().getCurrencyCode();
+  private String formatSymbol(Instrument instrument) {
+    if (instrument instanceof CurrencyPair) {
+      CurrencyPair currencyPair = (CurrencyPair) instrument;
+      return currencyPair.getBase().getCurrencyCode() + currencyPair.getCounter().getCurrencyCode();
+    }
+    throw new IllegalArgumentException("Instrument must be a CurrencyPair");
   }
 
   /**

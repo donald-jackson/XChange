@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.coinsph.dto.account.CoinsPHAccountInfo;
 import org.knowm.xchange.coinsph.dto.account.CoinsPHBalance;
@@ -20,9 +18,7 @@ import org.knowm.xchange.service.trade.params.DefaultWithdrawFundsParams;
 import org.knowm.xchange.service.trade.params.TradeHistoryParams;
 import org.knowm.xchange.service.trade.params.WithdrawFundsParams;
 
-/**
- * Implementation of the account service for Coins.ph
- */
+/** Implementation of the account service for Coins.ph */
 public class CoinsPHAccountService extends CoinsPHAccountServiceRaw implements AccountService {
 
   /**
@@ -38,7 +34,7 @@ public class CoinsPHAccountService extends CoinsPHAccountServiceRaw implements A
   public AccountInfo getAccountInfo() throws IOException {
     CoinsPHAccountInfo accountInfo = getCoinsPHAccountInfo();
     List<Balance> balances = new ArrayList<>();
-    
+
     for (CoinsPHBalance balance : accountInfo.getBalances()) {
       balances.add(
           new Balance.Builder()
@@ -48,16 +44,14 @@ public class CoinsPHAccountService extends CoinsPHAccountServiceRaw implements A
               .total(balance.getFree().add(balance.getLocked()))
               .build());
     }
-    
+
     return new AccountInfo(
-        new Wallet.Builder()
-            .id(accountInfo.getAccountType())
-            .balances(balances)
-            .build());
+        new Wallet.Builder().id(accountInfo.getAccountType()).balances(balances).build());
   }
 
   @Override
-  public String withdrawFunds(Currency currency, BigDecimal amount, String address) throws IOException {
+  public String withdrawFunds(Currency currency, BigDecimal amount, String address)
+      throws IOException {
     return withdrawFunds(new DefaultWithdrawFundsParams(address, currency, amount));
   }
 
@@ -74,7 +68,8 @@ public class CoinsPHAccountService extends CoinsPHAccountServiceRaw implements A
               null) // No withdraw order id
           .getId();
     }
-    throw new IllegalArgumentException("WithdrawFundsParams must be an instance of DefaultWithdrawFundsParams");
+    throw new IllegalArgumentException(
+        "WithdrawFundsParams must be an instance of DefaultWithdrawFundsParams");
   }
 
   @Override
@@ -83,7 +78,7 @@ public class CoinsPHAccountService extends CoinsPHAccountServiceRaw implements A
     if (args != null && args.length > 0) {
       network = args[0];
     }
-    
+
     CoinsPHDepositAddress depositAddress = getCoinsPHDepositAddress(currency, network);
     return depositAddress.getAddress();
   }

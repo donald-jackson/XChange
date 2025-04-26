@@ -1,21 +1,17 @@
 package org.knowm.xchange.coinsph;
 
-import java.io.IOException;
-import java.util.List;
-
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-
+import java.io.IOException;
+import java.util.List;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHOrderbook;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHTicker24h;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHTrade;
 
-/**
- * Coins.ph public API endpoints
- */
+/** Coins.ph public API endpoints */
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 public interface CoinsPH {
@@ -46,9 +42,7 @@ public interface CoinsPH {
   @Path("openapi/v1/exchangeInfo")
   CoinsPHExchangeInfo getExchangeInfo() throws IOException;
 
-  /**
-   * Server time response class
-   */
+  /** Server time response class */
   class CoinsPHServerTime {
     private long serverTime;
 
@@ -61,9 +55,7 @@ public interface CoinsPH {
     }
   }
 
-  /**
-   * Exchange info response class
-   */
+  /** Exchange info response class */
   class CoinsPHExchangeInfo {
     private String timezone;
     private long serverTime;
@@ -94,9 +86,7 @@ public interface CoinsPH {
     }
   }
 
-  /**
-   * Symbol info class
-   */
+  /** Symbol info class */
   class CoinsPHSymbolInfo {
     private String symbol;
     private String status;
@@ -172,9 +162,7 @@ public interface CoinsPH {
     }
   }
 
-  /**
-   * Symbol filter class
-   */
+  /** Symbol filter class */
   class CoinsPHSymbolFilter {
     private String filterType;
     private String minPrice;

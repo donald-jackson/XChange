@@ -1,16 +1,14 @@
 package org.knowm.xchange.coinsph.dto.account;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * Account information from Coins.ph
- */
+/** Account information from Coins.ph */
 @Getter
 @ToString
 public class CoinsPHAccountInfo {
@@ -49,7 +47,7 @@ public class CoinsPHAccountInfo {
     this.annually = annually;
     this.updateTime = updateTime;
   }
-  
+
   @JsonAnySetter
   public void setAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);

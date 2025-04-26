@@ -8,9 +8,7 @@ import org.knowm.xchange.service.BaseExchangeService;
 import org.knowm.xchange.service.BaseService;
 import si.mazi.rescu.ParamsDigest;
 
-/**
- * Base service for Coins.ph API
- */
+/** Base service for Coins.ph API */
 public class CoinsPHBaseService extends BaseExchangeService implements BaseService {
 
   protected final CoinsPH coinsPH;
@@ -25,14 +23,15 @@ public class CoinsPHBaseService extends BaseExchangeService implements BaseServi
    */
   public CoinsPHBaseService(Exchange exchange) {
     super(exchange);
-    this.coinsPH = ExchangeRestProxyBuilder.forInterface(
-            CoinsPH.class, exchange.getExchangeSpecification())
-        .build();
-    this.coinsPHAuthenticated = ExchangeRestProxyBuilder.forInterface(
-            CoinsPHAuthenticated.class, exchange.getExchangeSpecification())
-        .build();
+    this.coinsPH =
+        ExchangeRestProxyBuilder.forInterface(CoinsPH.class, exchange.getExchangeSpecification())
+            .build();
+    this.coinsPHAuthenticated =
+        ExchangeRestProxyBuilder.forInterface(
+                CoinsPHAuthenticated.class, exchange.getExchangeSpecification())
+            .build();
     this.apiKey = exchange.getExchangeSpecification().getApiKey();
-    this.signatureCreator = CoinsPHHmacDigest.createInstance(
-        exchange.getExchangeSpecification().getSecretKey());
+    this.signatureCreator =
+        CoinsPHHmacDigest.createInstance(exchange.getExchangeSpecification().getSecretKey());
   }
 }

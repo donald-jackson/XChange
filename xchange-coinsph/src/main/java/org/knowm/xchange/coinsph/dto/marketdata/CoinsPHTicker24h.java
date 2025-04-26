@@ -1,18 +1,18 @@
 package org.knowm.xchange.coinsph.dto.marketdata;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * 24hr ticker price change statistics for a symbol
- */
+/** 24hr ticker price change statistics for a symbol */
 @Getter
-@ToString(includeFieldNames = true, of = {"symbol", "lastPrice", "bidPrice", "askPrice", "volume"})
+@ToString(
+    includeFieldNames = true,
+    of = {"symbol", "lastPrice", "bidPrice", "askPrice", "volume"})
 public class CoinsPHTicker24h {
 
   private final String symbol;
@@ -82,7 +82,7 @@ public class CoinsPHTicker24h {
     this.lastId = lastId;
     this.count = count;
   }
-  
+
   @JsonAnySetter
   public void setAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);

@@ -1,17 +1,15 @@
 package org.knowm.xchange.coinsph.dto.trade;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * Order response from Coins.ph
- */
+/** Order response from Coins.ph */
 @Getter
 @ToString(of = {"symbol", "orderId", "clientOrderId", "status", "type", "side"})
 public class CoinsPHOrderResponse {
@@ -65,15 +63,13 @@ public class CoinsPHOrderResponse {
     this.origQuoteOrderQty = origQuoteOrderQty;
     this.fills = fills;
   }
-  
+
   @JsonAnySetter
   public void setAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);
   }
 
-  /**
-   * Order fill information
-   */
+  /** Order fill information */
   @Getter
   @ToString
   public static class CoinsPHOrderFill {
@@ -96,7 +92,7 @@ public class CoinsPHOrderResponse {
       this.commissionAsset = commissionAsset;
       this.tradeId = tradeId;
     }
-    
+
     @JsonAnySetter
     public void setAdditionalProperty(String name, Object value) {
       this.additionalProperties.put(name, value);

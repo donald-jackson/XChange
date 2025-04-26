@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
 import org.junit.Test;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHOrderbook;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHTicker24h;
@@ -20,36 +19,35 @@ import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.trade.LimitOrder;
 
-/**
- * Tests for the CoinsPHAdapters class
- */
+/** Tests for the CoinsPHAdapters class */
 public class CoinsPHAdaptersTest {
 
   @Test
   public void testAdaptTicker() {
     // Create test data
-    CoinsPHTicker24h coinsPHTicker = new CoinsPHTicker24h(
-        "BTCPHP",
-        new BigDecimal("1000"),
-        new BigDecimal("2"),
-        new BigDecimal("50000"),
-        new BigDecimal("49000"),
-        new BigDecimal("50000"),
-        new BigDecimal("0.1"),
-        new BigDecimal("49900"),
-        new BigDecimal("1"),
-        new BigDecimal("50100"),
-        new BigDecimal("1"),
-        new BigDecimal("49000"),
-        new BigDecimal("51000"),
-        new BigDecimal("48000"),
-        new BigDecimal("100"),
-        new BigDecimal("5000000"),
-        1617235200000L,
-        1617321600000L,
-        12345L,
-        12346L,
-        100L);
+    CoinsPHTicker24h coinsPHTicker =
+        new CoinsPHTicker24h(
+            "BTCPHP",
+            new BigDecimal("1000"),
+            new BigDecimal("2"),
+            new BigDecimal("50000"),
+            new BigDecimal("49000"),
+            new BigDecimal("50000"),
+            new BigDecimal("0.1"),
+            new BigDecimal("49900"),
+            new BigDecimal("1"),
+            new BigDecimal("50100"),
+            new BigDecimal("1"),
+            new BigDecimal("49000"),
+            new BigDecimal("51000"),
+            new BigDecimal("48000"),
+            new BigDecimal("100"),
+            new BigDecimal("5000000"),
+            1617235200000L,
+            1617321600000L,
+            12345L,
+            12346L,
+            100L);
 
     // Call the method under test
     Ticker ticker = CoinsPHAdapters.adaptTicker(coinsPHTicker, CurrencyPair.BTC_PHP);
@@ -105,22 +103,24 @@ public class CoinsPHAdaptersTest {
   public void testAdaptTrades() {
     // Create test data
     List<CoinsPHTrade> coinsPHTrades = new ArrayList<>();
-    coinsPHTrades.add(new CoinsPHTrade(
-        12345L,
-        new BigDecimal("50000"),
-        new BigDecimal("0.1"),
-        new BigDecimal("5000"),
-        1617321600000L,
-        false,
-        true));
-    coinsPHTrades.add(new CoinsPHTrade(
-        12346L,
-        new BigDecimal("50100"),
-        new BigDecimal("0.2"),
-        new BigDecimal("10020"),
-        1617321700000L,
-        true,
-        true));
+    coinsPHTrades.add(
+        new CoinsPHTrade(
+            12345L,
+            new BigDecimal("50000"),
+            new BigDecimal("0.1"),
+            new BigDecimal("5000"),
+            1617321600000L,
+            false,
+            true));
+    coinsPHTrades.add(
+        new CoinsPHTrade(
+            12346L,
+            new BigDecimal("50100"),
+            new BigDecimal("0.2"),
+            new BigDecimal("10020"),
+            1617321700000L,
+            true,
+            true));
 
     // Call the method under test
     Trades trades = CoinsPHAdapters.adaptTrades(coinsPHTrades, CurrencyPair.BTC_PHP);

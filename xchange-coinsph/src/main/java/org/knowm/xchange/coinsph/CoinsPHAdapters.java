@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHOrderbook;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHTicker24h;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHTrade;
@@ -17,20 +16,17 @@ import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.marketdata.Trades.TradeSortType;
 import org.knowm.xchange.dto.trade.LimitOrder;
+import org.knowm.xchange.instrument.Instrument;
 
-/**
- * Various adapters for converting from Coins.ph DTOs to XChange DTOs
- */
+/** Various adapters for converting from Coins.ph DTOs to XChange DTOs */
 public final class CoinsPHAdapters {
 
   private CoinsPHAdapters() {}
 
-  /**
-   * Adapts a CoinsPHTicker24h to a Ticker object
-   */
-  public static Ticker adaptTicker(CoinsPHTicker24h ticker, CurrencyPair currencyPair) {
+  /** Adapts a CoinsPHTicker24h to a Ticker object */
+  public static Ticker adaptTicker(CoinsPHTicker24h ticker, Instrument instrument) {
     return new Ticker.Builder()
-        .currencyPair(currencyPair)
+        .instrument(instrument)
         .open(ticker.getOpenPrice())
         .last(ticker.getLastPrice())
         .bid(ticker.getBidPrice())
@@ -44,48 +40,93 @@ public final class CoinsPHAdapters {
   }
 
   /**
-   * Adapts a CoinsPHOrderbook to an OrderBook object
+   * Adapts a CoinsPHTicker24h to a Ticker object
+   *
+   * @deprecated Use {@link #adaptTicker(CoinsPHTicker24h, Instrument)} instead
    */
-  public static OrderBook adaptOrderBook(CoinsPHOrderbook orderbook, CurrencyPair currencyPair) {
-    List<LimitOrder> bids = adaptLimitOrders(OrderType.BID, orderbook.getBids(), currencyPair);
-    List<LimitOrder> asks = adaptLimitOrders(OrderType.ASK, orderbook.getAsks(), currencyPair);
+  @Deprecated
+  public static Ticker adaptTicker(CoinsPHTicker24h ticker, CurrencyPair currencyPair) {
+    return adaptTicker(ticker, (Instrument) currencyPair);
+  }
+
+  /** Adapts a CoinsPHOrderbook to an OrderBook object */
+  public static OrderBook adaptOrderBook(CoinsPHOrderbook orderbook, Instrument instrument) {
+    List<LimitOrder> bids = adaptLimitOrders(OrderType.BID, orderbook.getBids(), instrument);
+    List<LimitOrder> asks = adaptLimitOrders(OrderType.ASK, orderbook.getAsks(), instrument);
     return new OrderBook(new Date(orderbook.getLastUpdateId()), asks, bids);
   }
 
   /**
-   * Adapts a list of CoinsPHTrades to a Trades object
+   * Adapts a CoinsPHOrderbook to an OrderBook object
+   *
+   * @deprecated Use {@link #adaptOrderBook(CoinsPHOrderbook, Instrument)} instead
    */
-  public static Trades adaptTrades(List<CoinsPHTrade> trades, CurrencyPair currencyPair) {
-    List<Trade> tradeList = trades.stream()
-        .map(trade -> adaptTrade(trade, currencyPair))
-        .collect(Collectors.toList());
+  @Deprecated
+  public static OrderBook adaptOrderBook(CoinsPHOrderbook orderbook, CurrencyPair currencyPair) {
+    return adaptOrderBook(orderbook, (Instrument) currencyPair);
+  }
+
+  /** Adapts a list of CoinsPHTrades to a Trades object */
+  public static Trades adaptTrades(List<CoinsPHTrade> trades, Instrument instrument) {
+    List<Trade> tradeList =
+        trades.stream().map(trade -> adaptTrade(trade, instrument)).collect(Collectors.toList());
     return new Trades(tradeList, TradeSortType.SortByTimestamp);
   }
 
   /**
-   * Adapts a CoinsPHTrade to a Trade object
+   * Adapts a list of CoinsPHTrades to a Trades object
+   *
+   * @deprecated Use {@link #adaptTrades(List, Instrument)} instead
    */
-  public static Trade adaptTrade(CoinsPHTrade trade, CurrencyPair currencyPair) {
+  @Deprecated
+  public static Trades adaptTrades(List<CoinsPHTrade> trades, CurrencyPair currencyPair) {
+    return adaptTrades(trades, (Instrument) currencyPair);
+  }
+
+  /** Adapts a CoinsPHTrade to a Trade object */
+  public static Trade adaptTrade(CoinsPHTrade trade, Instrument instrument) {
     OrderType type = trade.isBuyerMaker() ? OrderType.BID : OrderType.ASK;
     return new Trade.Builder()
         .type(type)
         .originalAmount(trade.getQty())
-        .currencyPair(currencyPair)
+        .instrument(instrument)
         .price(trade.getPrice())
         .timestamp(new Date(trade.getTime()))
         .id(String.valueOf(trade.getId()))
         .build();
   }
 
+  /**
+   * Adapts a CoinsPHTrade to a Trade object
+   *
+   * @deprecated Use {@link #adaptTrade(CoinsPHTrade, Instrument)} instead
+   */
+  @Deprecated
+  public static Trade adaptTrade(CoinsPHTrade trade, CurrencyPair currencyPair) {
+    return adaptTrade(trade, (Instrument) currencyPair);
+  }
+
   private static List<LimitOrder> adaptLimitOrders(
-      OrderType orderType, List<List<BigDecimal>> orders, CurrencyPair currencyPair) {
+      OrderType orderType, List<List<BigDecimal>> orders, Instrument instrument) {
     List<LimitOrder> limitOrders = new ArrayList<>();
     for (List<BigDecimal> order : orders) {
       if (order.size() == 2) {
         limitOrders.add(
-            new LimitOrder(orderType, order.get(1), currencyPair, null, null, order.get(0)));
+            new LimitOrder.Builder(orderType, instrument)
+                .originalAmount(order.get(1))
+                .limitPrice(order.get(0))
+                .build());
       }
     }
     return limitOrders;
+  }
+
+  /**
+   * @deprecated Use {@link #adaptLimitOrders(OrderType, List, Instrument)} instead
+   */
+  @Deprecated
+  private static List<LimitOrder> adaptLimitOrders(
+      OrderType orderType, List<List<BigDecimal>> orders, CurrencyPair currencyPair) {
+    return adaptLimitOrders(orderType, orders, (Instrument) currencyPair);
   }
 }

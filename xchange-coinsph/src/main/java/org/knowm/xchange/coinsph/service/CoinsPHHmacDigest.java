@@ -5,9 +5,7 @@ import javax.crypto.Mac;
 import org.knowm.xchange.service.BaseParamsDigest;
 import si.mazi.rescu.RestInvocation;
 
-/**
- * HMAC-SHA256 implementation for Coins.ph authentication
- */
+/** HMAC-SHA256 implementation for Coins.ph authentication */
 public class CoinsPHHmacDigest extends BaseParamsDigest {
 
   private CoinsPHHmacDigest(String secretKeyBase64) throws IllegalArgumentException {
@@ -28,7 +26,7 @@ public class CoinsPHHmacDigest extends BaseParamsDigest {
     if (queryString != null && !queryString.isEmpty()) {
       totalParams += queryString;
     }
-    
+
     if (bodyString != null && !bodyString.isEmpty()) {
       totalParams += bodyString;
     }

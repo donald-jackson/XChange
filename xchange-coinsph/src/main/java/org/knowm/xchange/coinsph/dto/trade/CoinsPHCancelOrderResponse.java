@@ -1,16 +1,14 @@
 package org.knowm.xchange.coinsph.dto.trade;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * Cancel order response from Coins.ph
- */
+/** Cancel order response from Coins.ph */
 @Getter
 @ToString(of = {"symbol", "orderId", "clientOrderId", "status"})
 public class CoinsPHCancelOrderResponse {
@@ -58,7 +56,7 @@ public class CoinsPHCancelOrderResponse {
     this.stopPrice = stopPrice;
     this.origQuoteOrderQty = origQuoteOrderQty;
   }
-  
+
   @JsonAnySetter
   public void setAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);

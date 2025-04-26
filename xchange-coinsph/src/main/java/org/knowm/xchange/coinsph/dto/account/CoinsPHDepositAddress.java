@@ -1,15 +1,13 @@
 package org.knowm.xchange.coinsph.dto.account;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashMap;
 import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * Deposit address information from Coins.ph
- */
+/** Deposit address information from Coins.ph */
 @Getter
 @ToString
 public class CoinsPHDepositAddress {
@@ -27,7 +25,7 @@ public class CoinsPHDepositAddress {
     this.address = address;
     this.addressTag = addressTag;
   }
-  
+
   @JsonAnySetter
   public void setAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);

@@ -1,15 +1,13 @@
 package org.knowm.xchange.coinsph.dto.trade;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashMap;
 import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * User data stream information from Coins.ph
- */
+/** User data stream information from Coins.ph */
 @Getter
 @ToString
 public class CoinsPHUserDataStream {
@@ -20,7 +18,7 @@ public class CoinsPHUserDataStream {
   public CoinsPHUserDataStream(@JsonProperty("listenKey") String listenKey) {
     this.listenKey = listenKey;
   }
-  
+
   @JsonAnySetter
   public void setAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);

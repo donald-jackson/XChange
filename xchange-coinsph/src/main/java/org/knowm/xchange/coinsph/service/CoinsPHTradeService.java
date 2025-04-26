@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.coinsph.dto.trade.CoinsPHOrder;
-import org.knowm.xchange.coinsph.dto.trade.CoinsPHTrade;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.trade.LimitOrder;
@@ -15,16 +13,17 @@ import org.knowm.xchange.dto.trade.MarketOrder;
 import org.knowm.xchange.dto.trade.OpenOrders;
 import org.knowm.xchange.dto.trade.StopOrder;
 import org.knowm.xchange.dto.trade.UserTrades;
+import org.knowm.xchange.instrument.Instrument;
 import org.knowm.xchange.service.trade.TradeService;
 import org.knowm.xchange.service.trade.params.CancelOrderParams;
 import org.knowm.xchange.service.trade.params.DefaultCancelOrderParamId;
 import org.knowm.xchange.service.trade.params.TradeHistoryParams;
-import org.knowm.xchange.service.trade.params.orders.DefaultOpenOrdersParamCurrencyPair;
+import org.knowm.xchange.service.trade.params.orders.DefaultOpenOrdersParamInstrument;
+import org.knowm.xchange.service.trade.params.orders.OpenOrdersParamCurrencyPair;
+import org.knowm.xchange.service.trade.params.orders.OpenOrdersParamInstrument;
 import org.knowm.xchange.service.trade.params.orders.OpenOrdersParams;
 
-/**
- * Implementation of the trade service for Coins.ph
- */
+/** Implementation of the trade service for Coins.ph */
 public class CoinsPHTradeService extends CoinsPHTradeServiceRaw implements TradeService {
 
   /**
@@ -43,18 +42,20 @@ public class CoinsPHTradeService extends CoinsPHTradeServiceRaw implements Trade
 
   @Override
   public OpenOrders getOpenOrders(OpenOrdersParams params) throws IOException {
-    CurrencyPair currencyPair = null;
-    if (params instanceof DefaultOpenOrdersParamCurrencyPair) {
-      currencyPair = ((DefaultOpenOrdersParamCurrencyPair) params).getCurrencyPair();
+    Instrument instrument = null;
+    if (params instanceof OpenOrdersParamInstrument) {
+      instrument = ((OpenOrdersParamInstrument) params).getInstrument();
+    } else if (params instanceof OpenOrdersParamCurrencyPair) {
+      instrument = ((OpenOrdersParamCurrencyPair) params).getCurrencyPair();
     }
-    
-    List<CoinsPHOrder> coinsPHOrders = getCoinsPHOpenOrders(currencyPair);
+
+    List<CoinsPHOrder> coinsPHOrders = getCoinsPHOpenOrders(instrument);
     List<LimitOrder> limitOrders = new ArrayList<>();
-    
+
     for (CoinsPHOrder order : coinsPHOrders) {
       limitOrders.add(adaptLimitOrder(order));
     }
-    
+
     return new OpenOrders(limitOrders);
   }
 
@@ -82,8 +83,10 @@ public class CoinsPHTradeService extends CoinsPHTradeServiceRaw implements Trade
   public boolean cancelOrder(CancelOrderParams orderParams) throws IOException {
     if (orderParams instanceof DefaultCancelOrderParamId) {
       String orderId = ((DefaultCancelOrderParamId) orderParams).getOrderId();
-      // Note: This is a simplification. In a real implementation, you would need to know the currency pair
-      // for the order. This might require maintaining a map of order IDs to currency pairs or fetching
+      // Note: This is a simplification. In a real implementation, you would need to know the
+      // instrument
+      // for the order. This might require maintaining a map of order IDs to currency pairs or
+      // fetching
       // open orders first to find the matching order.
       cancelCoinsPHOrder(null, Long.parseLong(orderId));
       return true;
@@ -103,7 +106,7 @@ public class CoinsPHTradeService extends CoinsPHTradeServiceRaw implements Trade
 
   @Override
   public OpenOrdersParams createOpenOrdersParams() {
-    return new DefaultOpenOrdersParamCurrencyPair();
+    return new DefaultOpenOrdersParamInstrument();
   }
 
   @Override
@@ -118,10 +121,11 @@ public class CoinsPHTradeService extends CoinsPHTradeServiceRaw implements Trade
    * @return the LimitOrder
    */
   private LimitOrder adaptLimitOrder(CoinsPHOrder order) {
-    Order.OrderType orderType = order.getSide().equals("BUY") ? Order.OrderType.BID : Order.OrderType.ASK;
-    CurrencyPair currencyPair = new CurrencyPair(
-        order.getSymbol().substring(0, 3), order.getSymbol().substring(3));
-    
+    Order.OrderType orderType =
+        order.getSide().equals("BUY") ? Order.OrderType.BID : Order.OrderType.ASK;
+    CurrencyPair currencyPair =
+        new CurrencyPair(order.getSymbol().substring(0, 3), order.getSymbol().substring(3));
+
     Order.OrderStatus status = Order.OrderStatus.UNKNOWN;
     switch (order.getStatus()) {
       case "NEW":
@@ -143,15 +147,16 @@ public class CoinsPHTradeService extends CoinsPHTradeServiceRaw implements Trade
         status = Order.OrderStatus.EXPIRED;
         break;
     }
-    
-    LimitOrder limitOrder = new LimitOrder.Builder(orderType, currencyPair)
-        .id(String.valueOf(order.getOrderId()))
-        .originalAmount(order.getOrigQty())
-        .limitPrice(order.getPrice())
-        .timestamp(new java.util.Date(order.getTime()))
-        .cumulativeAmount(order.getExecutedQty())
-        .userReference(order.getClientOrderId())
-        .build();
+
+    LimitOrder limitOrder =
+        new LimitOrder.Builder(orderType, currencyPair)
+            .id(String.valueOf(order.getOrderId()))
+            .originalAmount(order.getOrigQty())
+            .limitPrice(order.getPrice())
+            .timestamp(new java.util.Date(order.getTime()))
+            .cumulativeAmount(order.getExecutedQty())
+            .userReference(order.getClientOrderId())
+            .build();
     limitOrder.setOrderStatus(status);
     return limitOrder;
   }

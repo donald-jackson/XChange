@@ -1,15 +1,13 @@
 package org.knowm.xchange.coinsph.dto.account;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import lombok.Getter;
 import lombok.ToString;
 
-/**
- * Withdraw request for Coins.ph
- */
+/** Withdraw request for Coins.ph */
 @Getter
 @ToString
 public class CoinsPHWithdrawRequest {
@@ -36,7 +34,7 @@ public class CoinsPHWithdrawRequest {
     this.amount = amount;
     this.withdrawOrderId = withdrawOrderId;
   }
-  
+
   @JsonAnySetter
   public void setAdditionalProperty(String name, Object value) {
     this.additionalProperties.put(name, value);
