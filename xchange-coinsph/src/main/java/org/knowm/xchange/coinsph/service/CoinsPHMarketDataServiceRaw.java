@@ -3,6 +3,7 @@ package org.knowm.xchange.coinsph.service;
 import java.io.IOException;
 import java.util.List;
 import org.knowm.xchange.Exchange;
+import org.knowm.xchange.coinsph.CoinsPH;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHOrderbook;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHTicker24h;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHTrade;
@@ -33,6 +34,17 @@ public class CoinsPHMarketDataServiceRaw extends CoinsPHBaseService {
   }
 
   /**
+   * Get ticker for a specific symbol
+   *
+   * @param symbol the symbol
+   * @return the ticker
+   * @throws IOException if an error occurs
+   */
+  public CoinsPHTicker24h getCoinsPH24hrTicker(String symbol) throws IOException {
+    return coinsPH.get24hrTicker(symbol);
+  }
+
+  /**
    * Get all tickers
    *
    * @return the tickers
@@ -56,6 +68,18 @@ public class CoinsPHMarketDataServiceRaw extends CoinsPHBaseService {
   }
 
   /**
+   * Get order book for a specific symbol
+   *
+   * @param symbol the symbol
+   * @param limit the limit of orders to return
+   * @return the order book
+   * @throws IOException if an error occurs
+   */
+  public CoinsPHOrderbook getCoinsPHOrderBook(String symbol, Integer limit) throws IOException {
+    return coinsPH.getOrderBook(symbol, limit);
+  }
+
+  /**
    * Get trades for a specific instrument
    *
    * @param instrument the instrument
@@ -66,6 +90,38 @@ public class CoinsPHMarketDataServiceRaw extends CoinsPHBaseService {
   public List<CoinsPHTrade> getCoinsPHTrades(Instrument instrument, Integer limit)
       throws IOException {
     return coinsPH.getTrades(formatSymbol(instrument), limit);
+  }
+
+  /**
+   * Get trades for a specific symbol
+   *
+   * @param symbol the symbol
+   * @param limit the limit of trades to return
+   * @return the trades
+   * @throws IOException if an error occurs
+   */
+  public List<CoinsPHTrade> getCoinsPHTrades(String symbol, Integer limit) throws IOException {
+    return coinsPH.getTrades(symbol, limit);
+  }
+
+  /**
+   * Get server time
+   *
+   * @return the server time
+   * @throws IOException if an error occurs
+   */
+  public CoinsPH.CoinsPHServerTime getCoinsPHServerTime() throws IOException {
+    return coinsPH.getServerTime();
+  }
+
+  /**
+   * Get exchange info
+   *
+   * @return the exchange info
+   * @throws IOException if an error occurs
+   */
+  public CoinsPH.CoinsPHExchangeInfo getCoinsPHExchangeInfo() throws IOException {
+    return coinsPH.getExchangeInfo();
   }
 
   /**

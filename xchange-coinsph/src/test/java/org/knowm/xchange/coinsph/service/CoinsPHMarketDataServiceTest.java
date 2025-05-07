@@ -80,7 +80,7 @@ public class CoinsPHMarketDataServiceTest {
 
     // Verify the result
     assertThat(ticker).isNotNull();
-    assertThat(ticker.getCurrencyPair()).isEqualTo(CurrencyPair.BTC_PHP);
+    assertThat(ticker.getInstrument()).isEqualTo(CurrencyPair.BTC_PHP);
     assertThat(ticker.getLast()).isEqualTo(new BigDecimal("5344867.5"));
     assertThat(ticker.getBid()).isEqualTo(new BigDecimal("5343373.2"));
     assertThat(ticker.getAsk()).isEqualTo(new BigDecimal("5349500"));

@@ -12,7 +12,7 @@
     </root>
 
     <!-- Change this level to DEBUG to get more detailed logging -->
-    <logger name="org.knowm.xchange.coinsph" level="INFO"/>
-    <logger name="si.mazi.rescu" level="WARN"/>
+    <logger name="org.knowm.xchange.coinsph" level="TRACE"/>
+    <logger name="si.mazi.rescu" level="TRACE"/>
 
 </configuration>

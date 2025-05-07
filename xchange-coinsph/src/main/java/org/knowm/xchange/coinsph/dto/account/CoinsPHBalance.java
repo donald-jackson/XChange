@@ -20,11 +20,11 @@ public class CoinsPHBalance {
 
   public CoinsPHBalance(
       @JsonProperty("asset") String asset,
-      @JsonProperty("free") BigDecimal free,
-      @JsonProperty("locked") BigDecimal locked) {
+      @JsonProperty("free") String free,
+      @JsonProperty("locked") String locked) {
     this.asset = asset;
-    this.free = free;
-    this.locked = locked;
+    this.free = new BigDecimal(free);
+    this.locked = new BigDecimal(locked);
   }
 
   @JsonAnySetter

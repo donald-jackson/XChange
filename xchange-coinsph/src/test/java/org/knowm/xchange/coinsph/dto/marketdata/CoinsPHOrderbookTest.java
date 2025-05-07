@@ -1,6 +1,6 @@
 package org.knowm.xchange.coinsph.dto.marketdata;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -8,42 +8,25 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import org.junit.Test;
 
+/** Test CoinsPHOrderbook JSON parsing */
 public class CoinsPHOrderbookTest {
+
+  private final ObjectMapper mapper = new ObjectMapper();
 
   @Test
   public void testUnmarshall() throws IOException {
-    // given
+    // Read sample data from file
     InputStream is =
-        CoinsPHOrderbookTest.class.getResourceAsStream("/marketdata/BTCUSDT_orderbook.json");
-
-    // when
-    ObjectMapper mapper = new ObjectMapper();
+        CoinsPHOrderbookTest.class.getResourceAsStream("/marketdata/example-depth-data.json");
     CoinsPHOrderbook orderbook = mapper.readValue(is, CoinsPHOrderbook.class);
 
-    // then
-    assertThat(orderbook.getLastUpdateId()).isEqualTo(83693598114L);
-
-    // Check bids
-    assertThat(orderbook.getBids()).isNotEmpty();
-    assertThat(orderbook.getBids().size()).isGreaterThan(0);
-
-    // Check first bid
-    assertThat(orderbook.getBids().get(0).size()).isEqualTo(2);
-    assertThat(orderbook.getBids().get(0).get(0))
-        .isEqualTo(new BigDecimal("94321.090000000000000000"));
-    assertThat(orderbook.getBids().get(0).get(1)).isEqualTo(new BigDecimal("0.011031100000000000"));
-
-    // Check asks
-    assertThat(orderbook.getAsks()).isNotEmpty();
-    assertThat(orderbook.getAsks().size()).isGreaterThan(0);
-
-    // Check first ask
-    assertThat(orderbook.getAsks().get(0).size()).isEqualTo(2);
-    assertThat(orderbook.getAsks().get(0).get(0))
-        .isEqualTo(new BigDecimal("95155.520000000000000000"));
-    assertThat(orderbook.getAsks().get(0).get(1)).isEqualTo(new BigDecimal("0.026395500000000000"));
-
-    // Check additionalProperties - should be empty since all fields are defined in the class
-    assertThat(orderbook.getAdditionalProperties()).isNotNull();
+    // Test values);
+    assertEquals(1988681136L, orderbook.getLastUpdateId());
+    assertEquals(10, orderbook.getBids().size());
+    assertEquals(10, orderbook.getAsks().size());
+    assertEquals(new BigDecimal("82997.810000000000000000"), orderbook.getBids().get(0).get(0));
+    assertEquals(new BigDecimal("0.004900000000000000"), orderbook.getBids().get(0).get(1));
+    assertEquals(new BigDecimal("83013.010000000000000000"), orderbook.getAsks().get(0).get(0));
+    assertEquals(new BigDecimal("0.026105300000000000"), orderbook.getAsks().get(0).get(1));
   }
 }

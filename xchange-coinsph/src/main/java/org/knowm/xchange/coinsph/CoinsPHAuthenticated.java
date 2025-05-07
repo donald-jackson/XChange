@@ -26,7 +26,18 @@ import si.mazi.rescu.ParamsDigest;
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 public interface CoinsPHAuthenticated extends CoinsPH {
+  String SIGNATURE = "signature";
 
+  /**
+   * Get account information
+   *
+   * @param apiKey the API key
+   * @param recvWindow the receive window
+   * @param timestamp the timestamp
+   * @param signature the signature
+   * @return the account information
+   * @throws IOException if an error occurs
+   */
   @GET
   @Path("openapi/v1/account")
   CoinsPHAccountInfo getAccountInfo(
@@ -36,6 +47,18 @@ public interface CoinsPHAuthenticated extends CoinsPH {
       @QueryParam("signature") ParamsDigest signature)
       throws IOException;
 
+  /**
+   * Get deposit address
+   *
+   * @param apiKey the API key
+   * @param coin the coin
+   * @param network the network (optional)
+   * @param recvWindow the receive window
+   * @param timestamp the timestamp
+   * @param signature the signature
+   * @return the deposit address
+   * @throws IOException if an error occurs
+   */
   @GET
   @Path("openapi/wallet/v1/deposit/address")
   CoinsPHDepositAddress getDepositAddress(
@@ -47,6 +70,22 @@ public interface CoinsPHAuthenticated extends CoinsPH {
       @QueryParam("signature") ParamsDigest signature)
       throws IOException;
 
+  /**
+   * Withdraw funds
+   *
+   * @param apiKey the API key
+   * @param coin the coin
+   * @param network the network (optional)
+   * @param address the address
+   * @param addressTag the address tag (memo/tag for specific coins)
+   * @param amount the amount
+   * @param withdrawOrderId client order id for withdraw
+   * @param recvWindow the receive window
+   * @param timestamp the timestamp
+   * @param signature the signature
+   * @return the withdraw response
+   * @throws IOException if an error occurs
+   */
   @POST
   @Path("openapi/wallet/v1/withdraw/apply")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -63,6 +102,27 @@ public interface CoinsPHAuthenticated extends CoinsPH {
       @QueryParam("signature") ParamsDigest signature)
       throws IOException;
 
+  /**
+   * Place a new order
+   *
+   * @param apiKey the API key
+   * @param symbol the symbol
+   * @param side the side (BUY/SELL)
+   * @param type the type (LIMIT/MARKET/etc)
+   * @param timeInForce the time in force (GTC/IOC/FOK)
+   * @param quantity the quantity
+   * @param quoteOrderQty the quote order quantity (for MARKET orders)
+   * @param price the price
+   * @param newClientOrderId the client order id
+   * @param stopPrice the stop price (for STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and
+   *     TAKE_PROFIT_LIMIT orders)
+   * @param newOrderRespType the response type (ACK, RESULT, FULL)
+   * @param recvWindow the receive window
+   * @param timestamp the timestamp
+   * @param signature the signature
+   * @return the order response
+   * @throws IOException if an error occurs
+   */
   @POST
   @Path("openapi/v1/order")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -83,6 +143,19 @@ public interface CoinsPHAuthenticated extends CoinsPH {
       @QueryParam("signature") ParamsDigest signature)
       throws IOException;
 
+  /**
+   * Cancel an order
+   *
+   * @param apiKey the API key
+   * @param symbol the symbol
+   * @param orderId the order id
+   * @param origClientOrderId the original client order id
+   * @param recvWindow the receive window
+   * @param timestamp the timestamp
+   * @param signature the signature
+   * @return the cancel order response
+   * @throws IOException if an error occurs
+   */
   @DELETE
   @Path("openapi/v1/order")
   CoinsPHCancelOrderResponse cancelOrder(
@@ -95,6 +168,19 @@ public interface CoinsPHAuthenticated extends CoinsPH {
       @QueryParam("signature") ParamsDigest signature)
       throws IOException;
 
+  /**
+   * Get order status
+   *
+   * @param apiKey the API key
+   * @param symbol the symbol
+   * @param orderId the order id
+   * @param origClientOrderId the original client order id
+   * @param recvWindow the receive window
+   * @param timestamp the timestamp
+   * @param signature the signature
+   * @return the order
+   * @throws IOException if an error occurs
+   */
   @GET
   @Path("openapi/v1/order")
   CoinsPHOrder getOrder(
@@ -107,6 +193,17 @@ public interface CoinsPHAuthenticated extends CoinsPH {
       @QueryParam("signature") ParamsDigest signature)
       throws IOException;
 
+  /**
+   * Get open orders
+   *
+   * @param apiKey the API key
+   * @param symbol the symbol (optional)
+   * @param recvWindow the receive window
+   * @param timestamp the timestamp
+   * @param signature the signature
+   * @return the list of open orders
+   * @throws IOException if an error occurs
+   */
   @GET
   @Path("openapi/v1/openOrders")
   List<CoinsPHOrder> getOpenOrders(
@@ -117,6 +214,21 @@ public interface CoinsPHAuthenticated extends CoinsPH {
       @QueryParam("signature") ParamsDigest signature)
       throws IOException;
 
+  /**
+   * Get order history
+   *
+   * @param apiKey the API key
+   * @param symbol the symbol
+   * @param orderId the order id
+   * @param startTime the start time
+   * @param endTime the end time
+   * @param limit the limit
+   * @param recvWindow the receive window
+   * @param timestamp the timestamp
+   * @param signature the signature
+   * @return the list of historical orders
+   * @throws IOException if an error occurs
+   */
   @GET
   @Path("openapi/v1/historyOrders")
   List<CoinsPHOrder> getHistoryOrders(
@@ -131,6 +243,22 @@ public interface CoinsPHAuthenticated extends CoinsPH {
       @QueryParam("signature") ParamsDigest signature)
       throws IOException;
 
+  /**
+   * Get trade history
+   *
+   * @param apiKey the API key
+   * @param symbol the symbol
+   * @param orderId the order id
+   * @param startTime the start time
+   * @param endTime the end time
+   * @param fromId the from id
+   * @param limit the limit
+   * @param recvWindow the receive window
+   * @param timestamp the timestamp
+   * @param signature the signature
+   * @return the list of trades
+   * @throws IOException if an error occurs
+   */
   @GET
   @Path("openapi/v1/myTrades")
   List<CoinsPHTrade> getMyTrades(
@@ -146,17 +274,40 @@ public interface CoinsPHAuthenticated extends CoinsPH {
       @QueryParam("signature") ParamsDigest signature)
       throws IOException;
 
+  /**
+   * Start user data stream
+   *
+   * @param apiKey the API key
+   * @return the user data stream
+   * @throws IOException if an error occurs
+   */
   @POST
   @Path("openapi/v1/userDataStream")
   CoinsPHUserDataStream startUserDataStream(@HeaderParam("X-COINS-APIKEY") String apiKey)
       throws IOException;
 
+  /**
+   * Keep alive user data stream
+   *
+   * @param apiKey the API key
+   * @param listenKey the listen key
+   * @return the response
+   * @throws IOException if an error occurs
+   */
   @jakarta.ws.rs.PUT
   @Path("openapi/v1/userDataStream")
   Map<String, Object> keepAliveUserDataStream(
       @HeaderParam("X-COINS-APIKEY") String apiKey, @QueryParam("listenKey") String listenKey)
       throws IOException;
 
+  /**
+   * Close user data stream
+   *
+   * @param apiKey the API key
+   * @param listenKey the listen key
+   * @return the response
+   * @throws IOException if an error occurs
+   */
   @DELETE
   @Path("openapi/v1/userDataStream")
   Map<String, Object> closeUserDataStream(

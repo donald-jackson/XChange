@@ -9,7 +9,6 @@ import org.knowm.xchange.coinsph.dto.trade.CoinsPHOrder;
 import org.knowm.xchange.coinsph.dto.trade.CoinsPHOrderResponse;
 import org.knowm.xchange.coinsph.dto.trade.CoinsPHTrade;
 import org.knowm.xchange.coinsph.dto.trade.CoinsPHUserDataStream;
-import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.MarketOrder;
@@ -35,6 +34,9 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
    * @throws IOException if an error occurs
    */
   public CoinsPHOrderResponse placeCoinsPHLimitOrder(LimitOrder limitOrder) throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
     return coinsPHAuthenticated.newOrder(
         apiKey,
         formatSymbol(limitOrder.getInstrument()),
@@ -47,9 +49,9 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
         limitOrder.getUserReference(),
         null,
         null,
-        getRecvWindow(),
-        exchange.getNonceFactory().createValue(),
-        signatureCreator);
+        recvWindow,
+        timestamp,
+        coinsPHSignatureCreator);
   }
 
   /**
@@ -60,6 +62,9 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
    * @throws IOException if an error occurs
    */
   public CoinsPHOrderResponse placeCoinsPHMarketOrder(MarketOrder marketOrder) throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
     return coinsPHAuthenticated.newOrder(
         apiKey,
         formatSymbol(marketOrder.getInstrument()),
@@ -72,9 +77,9 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
         marketOrder.getUserReference(),
         null,
         null,
-        getRecvWindow(),
-        exchange.getNonceFactory().createValue(),
-        signatureCreator);
+        recvWindow,
+        timestamp,
+        coinsPHSignatureCreator);
   }
 
   /**
@@ -87,14 +92,17 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
    */
   public CoinsPHCancelOrderResponse cancelCoinsPHOrder(Instrument instrument, long orderId)
       throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
     return coinsPHAuthenticated.cancelOrder(
         apiKey,
         instrument != null ? formatSymbol(instrument) : null,
         orderId,
         null,
-        getRecvWindow(),
-        exchange.getNonceFactory().createValue(),
-        signatureCreator);
+        recvWindow,
+        timestamp,
+        coinsPHSignatureCreator);
   }
 
   /**
@@ -106,14 +114,35 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
    * @throws IOException if an error occurs
    */
   public CoinsPHOrder getCoinsPHOrder(Instrument instrument, long orderId) throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
     return coinsPHAuthenticated.getOrder(
         apiKey,
         formatSymbol(instrument),
         orderId,
         null,
-        getRecvWindow(),
-        exchange.getNonceFactory().createValue(),
-        signatureCreator);
+        recvWindow,
+        timestamp,
+        coinsPHSignatureCreator);
+  }
+
+  /**
+   * Get order status
+   *
+   * @param symbol the symbol
+   * @param orderId the order id
+   * @param origClientOrderId the original client order id
+   * @return the order
+   * @throws IOException if an error occurs
+   */
+  public CoinsPHOrder getCoinsPHOrder(String symbol, Long orderId, String origClientOrderId)
+      throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
+    return coinsPHAuthenticated.getOrder(
+        apiKey, symbol, orderId, origClientOrderId, recvWindow, timestamp, coinsPHSignatureCreator);
   }
 
   /**
@@ -124,12 +153,15 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
    * @throws IOException if an error occurs
    */
   public List<CoinsPHOrder> getCoinsPHOpenOrders(Instrument instrument) throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
     return coinsPHAuthenticated.getOpenOrders(
         apiKey,
         instrument != null ? formatSymbol(instrument) : null,
-        getRecvWindow(),
-        exchange.getNonceFactory().createValue(),
-        signatureCreator);
+        recvWindow,
+        timestamp,
+        coinsPHSignatureCreator);
   }
 
   /**
@@ -142,6 +174,9 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
    */
   public List<CoinsPHOrder> getCoinsPHOrderHistory(Instrument instrument, Integer limit)
       throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
     return coinsPHAuthenticated.getHistoryOrders(
         apiKey,
         formatSymbol(instrument),
@@ -149,9 +184,37 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
         null,
         null,
         limit,
-        getRecvWindow(),
-        exchange.getNonceFactory().createValue(),
-        signatureCreator);
+        recvWindow,
+        timestamp,
+        coinsPHSignatureCreator);
+  }
+
+  /**
+   * Get order history
+   *
+   * @param symbol the symbol
+   * @param orderId the order id
+   * @param startTime the start time
+   * @param endTime the end time
+   * @param limit the limit of orders to return
+   * @return the order history
+   * @throws IOException if an error occurs
+   */
+  public List<CoinsPHOrder> getCoinsPHHistoryOrders(
+      String symbol, Long orderId, Long startTime, Long endTime, Integer limit) throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
+    return coinsPHAuthenticated.getHistoryOrders(
+        apiKey,
+        symbol,
+        orderId,
+        startTime,
+        endTime,
+        limit,
+        recvWindow,
+        timestamp,
+        coinsPHSignatureCreator);
   }
 
   /**
@@ -164,6 +227,9 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
    */
   public List<CoinsPHTrade> getCoinsPHTradeHistory(Instrument instrument, Integer limit)
       throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
     return coinsPHAuthenticated.getMyTrades(
         apiKey,
         formatSymbol(instrument),
@@ -172,9 +238,40 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
         null,
         null,
         limit,
-        getRecvWindow(),
-        exchange.getNonceFactory().createValue(),
-        signatureCreator);
+        recvWindow,
+        timestamp,
+        coinsPHSignatureCreator);
+  }
+
+  /**
+   * Get trade history
+   *
+   * @param symbol the symbol
+   * @param orderId the order id
+   * @param startTime the start time
+   * @param endTime the end time
+   * @param fromId the from id
+   * @param limit the limit of trades to return
+   * @return the trade history
+   * @throws IOException if an error occurs
+   */
+  public List<CoinsPHTrade> getCoinsPHMyTrades(
+      String symbol, Long orderId, Long startTime, Long endTime, Long fromId, Integer limit)
+      throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
+    return coinsPHAuthenticated.getMyTrades(
+        apiKey,
+        symbol,
+        orderId,
+        startTime,
+        endTime,
+        fromId,
+        limit,
+        recvWindow,
+        timestamp,
+        coinsPHSignatureCreator);
   }
 
   /**
@@ -210,17 +307,13 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
   }
 
   /**
-   * Format instrument to Coins.ph symbol format
+   * Format the instrument to a symbol
    *
    * @param instrument the instrument
-   * @return the formatted symbol
+   * @return the symbol
    */
   private String formatSymbol(Instrument instrument) {
-    if (instrument instanceof CurrencyPair) {
-      CurrencyPair currencyPair = (CurrencyPair) instrument;
-      return currencyPair.getBase().getCurrencyCode() + currencyPair.getCounter().getCurrencyCode();
-    }
-    throw new IllegalArgumentException("Instrument must be a CurrencyPair");
+    return instrument.toString().replace("/", "").replace(" ", "").replace("-", "_");
   }
 
   /**

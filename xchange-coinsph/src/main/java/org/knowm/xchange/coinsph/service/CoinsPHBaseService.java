@@ -6,14 +6,13 @@ import org.knowm.xchange.coinsph.CoinsPH;
 import org.knowm.xchange.coinsph.CoinsPHAuthenticated;
 import org.knowm.xchange.service.BaseExchangeService;
 import org.knowm.xchange.service.BaseService;
-import si.mazi.rescu.ParamsDigest;
 
 /** Base service for Coins.ph API */
 public class CoinsPHBaseService extends BaseExchangeService implements BaseService {
 
   protected final CoinsPH coinsPH;
   protected final CoinsPHAuthenticated coinsPHAuthenticated;
-  protected final ParamsDigest signatureCreator;
+  protected final CoinsPHSignatureCreator coinsPHSignatureCreator;
   protected final String apiKey;
 
   /**
@@ -31,7 +30,8 @@ public class CoinsPHBaseService extends BaseExchangeService implements BaseServi
                 CoinsPHAuthenticated.class, exchange.getExchangeSpecification())
             .build();
     this.apiKey = exchange.getExchangeSpecification().getApiKey();
-    this.signatureCreator =
-        CoinsPHHmacDigest.createInstance(exchange.getExchangeSpecification().getSecretKey());
+
+    this.coinsPHSignatureCreator =
+        CoinsPHSignatureCreator.createInstance(exchange.getExchangeSpecification().getSecretKey());
   }
 }

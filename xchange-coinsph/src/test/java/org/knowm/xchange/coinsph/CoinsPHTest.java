@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
 import org.junit.Test;
 import org.knowm.xchange.coinsph.CoinsPH.CoinsPHExchangeInfo;
 import org.knowm.xchange.coinsph.CoinsPH.CoinsPHServerTime;
@@ -63,16 +64,13 @@ public class CoinsPHTest {
   }
 
   // Extended class with additionalProperties support
+  @Getter
   public static class ExtendedExchangeInfo extends CoinsPHExchangeInfo {
     private final Map<String, Object> additionalProperties = new HashMap<>();
 
     @JsonAnySetter
     public void setAdditionalProperty(String name, Object value) {
       this.additionalProperties.put(name, value);
-    }
-
-    public Map<String, Object> getAdditionalProperties() {
-      return this.additionalProperties;
     }
 
     @Override
@@ -91,17 +89,7 @@ public class CoinsPHTest {
         if (symbol.getFilters() != null) {
           List<CoinsPHSymbolFilter> extendedFilters = new ArrayList<>();
           for (CoinsPHSymbolFilter filter : symbol.getFilters()) {
-            ExtendedSymbolFilter extFilter = new ExtendedSymbolFilter();
-            extFilter.setFilterType(filter.getFilterType());
-            extFilter.setMinPrice(filter.getMinPrice());
-            extFilter.setMaxPrice(filter.getMaxPrice());
-            extFilter.setTickSize(filter.getTickSize());
-            extFilter.setMinQty(filter.getMinQty());
-            extFilter.setMaxQty(filter.getMaxQty());
-            extFilter.setStepSize(filter.getStepSize());
-            extFilter.setMinNotional(filter.getMinNotional());
-            extFilter.setMaxNumOrders(filter.getMaxNumOrders());
-            extFilter.setMaxNumAlgoOrders(filter.getMaxNumAlgoOrders());
+            ExtendedSymbolFilter extFilter = getExtendedSymbolFilter(filter);
             extendedFilters.add(extFilter);
           }
           extSymbol.setFilters(extendedFilters);
@@ -111,8 +99,24 @@ public class CoinsPHTest {
       }
       super.setSymbols(extendedSymbols);
     }
+
+    private ExtendedSymbolFilter getExtendedSymbolFilter(CoinsPHSymbolFilter filter) {
+      ExtendedSymbolFilter extFilter = new ExtendedSymbolFilter();
+      extFilter.setFilterType(filter.getFilterType());
+      extFilter.setMinPrice(filter.getMinPrice());
+      extFilter.setMaxPrice(filter.getMaxPrice());
+      extFilter.setTickSize(filter.getTickSize());
+      extFilter.setMinQty(filter.getMinQty());
+      extFilter.setMaxQty(filter.getMaxQty());
+      extFilter.setStepSize(filter.getStepSize());
+      extFilter.setMinNotional(filter.getMinNotional());
+      extFilter.setMaxNumOrders(filter.getMaxNumOrders());
+      extFilter.setMaxNumAlgoOrders(filter.getMaxNumAlgoOrders());
+      return extFilter;
+    }
   }
 
+  @Getter
   public static class ExtendedSymbolInfo extends CoinsPHSymbolInfo {
     private final Map<String, Object> additionalProperties = new HashMap<>();
 
@@ -120,22 +124,15 @@ public class CoinsPHTest {
     public void setAdditionalProperty(String name, Object value) {
       this.additionalProperties.put(name, value);
     }
-
-    public Map<String, Object> getAdditionalProperties() {
-      return this.additionalProperties;
-    }
   }
 
+  @Getter
   public static class ExtendedSymbolFilter extends CoinsPHSymbolFilter {
     private final Map<String, Object> additionalProperties = new HashMap<>();
 
     @JsonAnySetter
     public void setAdditionalProperty(String name, Object value) {
       this.additionalProperties.put(name, value);
-    }
-
-    public Map<String, Object> getAdditionalProperties() {
-      return this.additionalProperties;
     }
   }
 }

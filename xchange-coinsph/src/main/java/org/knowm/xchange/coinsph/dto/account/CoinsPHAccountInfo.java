@@ -23,6 +23,8 @@ public class CoinsPHAccountInfo {
   private final CoinsPHLimits monthly;
   private final CoinsPHLimits annually;
   private final long updateTime;
+  private final Integer code;
+  private final String msg;
   private final Map<String, Object> additionalProperties = new HashMap<>();
 
   public CoinsPHAccountInfo(
@@ -35,7 +37,9 @@ public class CoinsPHAccountInfo {
       @JsonProperty("daily") CoinsPHLimits daily,
       @JsonProperty("monthly") CoinsPHLimits monthly,
       @JsonProperty("annually") CoinsPHLimits annually,
-      @JsonProperty("updateTime") long updateTime) {
+      @JsonProperty("updateTime") long updateTime,
+      @JsonProperty("code") Integer code,
+      @JsonProperty("msg") String msg) {
     this.accountType = accountType;
     this.canDeposit = canDeposit;
     this.canTrade = canTrade;
@@ -46,6 +50,26 @@ public class CoinsPHAccountInfo {
     this.monthly = monthly;
     this.annually = annually;
     this.updateTime = updateTime;
+    this.code = code;
+    this.msg = msg;
+  }
+
+  /**
+   * Check if the response is an error
+   *
+   * @return true if the response is an error
+   */
+  public boolean isError() {
+    return code != null && code < 0;
+  }
+
+  /**
+   * Get the error message if this is an error response
+   *
+   * @return the error message or null if not an error
+   */
+  public String getErrorMessage() {
+    return isError() ? msg : null;
   }
 
   @JsonAnySetter

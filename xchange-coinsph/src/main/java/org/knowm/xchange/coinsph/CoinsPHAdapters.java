@@ -39,12 +39,7 @@ public final class CoinsPHAdapters {
         .build();
   }
 
-  /**
-   * Adapts a CoinsPHTicker24h to a Ticker object
-   *
-   * @deprecated Use {@link #adaptTicker(CoinsPHTicker24h, Instrument)} instead
-   */
-  @Deprecated
+  /** Adapts a CoinsPHTicker24h to a Ticker object */
   public static Ticker adaptTicker(CoinsPHTicker24h ticker, CurrencyPair currencyPair) {
     return adaptTicker(ticker, (Instrument) currencyPair);
   }
@@ -56,12 +51,7 @@ public final class CoinsPHAdapters {
     return new OrderBook(new Date(orderbook.getLastUpdateId()), asks, bids);
   }
 
-  /**
-   * Adapts a CoinsPHOrderbook to an OrderBook object
-   *
-   * @deprecated Use {@link #adaptOrderBook(CoinsPHOrderbook, Instrument)} instead
-   */
-  @Deprecated
+  /** Adapts a CoinsPHOrderbook to an OrderBook object */
   public static OrderBook adaptOrderBook(CoinsPHOrderbook orderbook, CurrencyPair currencyPair) {
     return adaptOrderBook(orderbook, (Instrument) currencyPair);
   }
@@ -73,12 +63,7 @@ public final class CoinsPHAdapters {
     return new Trades(tradeList, TradeSortType.SortByTimestamp);
   }
 
-  /**
-   * Adapts a list of CoinsPHTrades to a Trades object
-   *
-   * @deprecated Use {@link #adaptTrades(List, Instrument)} instead
-   */
-  @Deprecated
+  /** Adapts a list of CoinsPHTrades to a Trades object */
   public static Trades adaptTrades(List<CoinsPHTrade> trades, CurrencyPair currencyPair) {
     return adaptTrades(trades, (Instrument) currencyPair);
   }
@@ -128,5 +113,55 @@ public final class CoinsPHAdapters {
   private static List<LimitOrder> adaptLimitOrders(
       OrderType orderType, List<List<BigDecimal>> orders, CurrencyPair currencyPair) {
     return adaptLimitOrders(orderType, orders, (Instrument) currencyPair);
+  }
+
+  /**
+   * Adapts a currency pair to a symbol
+   *
+   * @param currencyPair The currency pair
+   * @return The symbol
+   */
+  public static String adaptCurrencyPair(CurrencyPair currencyPair) {
+    return currencyPair.getBase().getCurrencyCode() + currencyPair.getCounter().getCurrencyCode();
+  }
+
+  /**
+   * Adapts a symbol to a currency pair
+   *
+   * @param symbol The symbol
+   * @return The currency pair
+   */
+  public static CurrencyPair adaptSymbolToCurrencyPair(String symbol) {
+    // Extract base and counter currencies from symbol
+    // Assuming symbol format is like "BTCUSDT"
+    int i;
+    for (i = 0; i < symbol.length(); i++) {
+      if (Character.isDigit(symbol.charAt(i))) {
+        break;
+      }
+    }
+    if (i == symbol.length()) {
+      // No digits found, try to find common quote currencies
+      if (symbol.endsWith("USDT")) {
+        return new CurrencyPair(symbol.substring(0, symbol.length() - 4), "USDT");
+      } else {
+        if (symbol.endsWith("BTC")) {
+          return new CurrencyPair(symbol.substring(0, symbol.length() - 3), "BTC");
+        } else if (symbol.endsWith("ETH")) {
+          return new CurrencyPair(symbol.substring(0, symbol.length() - 3), "ETH");
+        } else if (symbol.endsWith("BNB")) {
+          return new CurrencyPair(symbol.substring(0, symbol.length() - 3), "BNB");
+        } else if (symbol.endsWith("USDC")) {
+          return new CurrencyPair(symbol.substring(0, symbol.length() - 4), "USDC");
+        } else {
+          // Default to last 3 characters as quote currency
+          return new CurrencyPair(
+              symbol.substring(0, symbol.length() - 3), symbol.substring(symbol.length() - 3));
+        }
+      }
+    } else {
+      // Digits found, split at that point
+      return new CurrencyPair(symbol.substring(0, i), symbol.substring(i));
+    }
   }
 }

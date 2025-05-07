@@ -27,8 +27,11 @@ public class CoinsPHAccountServiceRaw extends CoinsPHBaseService {
    * @throws IOException if an error occurs
    */
   public CoinsPHAccountInfo getCoinsPHAccountInfo() throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
     return coinsPHAuthenticated.getAccountInfo(
-        apiKey, getRecvWindow(), exchange.getNonceFactory().createValue(), signatureCreator);
+        apiKey, recvWindow, timestamp, coinsPHSignatureCreator);
   }
 
   /**
@@ -41,13 +44,16 @@ public class CoinsPHAccountServiceRaw extends CoinsPHBaseService {
    */
   public CoinsPHDepositAddress getCoinsPHDepositAddress(Currency currency, String network)
       throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
     return coinsPHAuthenticated.getDepositAddress(
         apiKey,
         currency.getCurrencyCode(),
         network,
-        getRecvWindow(),
-        exchange.getNonceFactory().createValue(),
-        signatureCreator);
+        recvWindow,
+        timestamp,
+        coinsPHSignatureCreator);
   }
 
   /**
@@ -70,6 +76,9 @@ public class CoinsPHAccountServiceRaw extends CoinsPHBaseService {
       BigDecimal amount,
       String withdrawOrderId)
       throws IOException {
+    long timestamp = exchange.getNonceFactory().createValue();
+    long recvWindow = getRecvWindow();
+
     return coinsPHAuthenticated.withdraw(
         apiKey,
         currency.getCurrencyCode(),
@@ -78,9 +87,9 @@ public class CoinsPHAccountServiceRaw extends CoinsPHBaseService {
         addressTag,
         amount.toPlainString(),
         withdrawOrderId,
-        getRecvWindow(),
-        exchange.getNonceFactory().createValue(),
-        signatureCreator);
+        recvWindow,
+        timestamp,
+        coinsPHSignatureCreator);
   }
 
   /**

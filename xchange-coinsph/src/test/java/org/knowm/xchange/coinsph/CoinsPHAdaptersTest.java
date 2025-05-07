@@ -54,7 +54,7 @@ public class CoinsPHAdaptersTest {
 
     // Verify the result
     assertThat(ticker).isNotNull();
-    assertThat(ticker.getCurrencyPair()).isEqualTo(CurrencyPair.BTC_PHP);
+    assertThat(ticker.getInstrument()).isEqualTo(CurrencyPair.BTC_PHP);
     assertThat(ticker.getLast()).isEqualTo(new BigDecimal("50000"));
     assertThat(ticker.getBid()).isEqualTo(new BigDecimal("49900"));
     assertThat(ticker.getAsk()).isEqualTo(new BigDecimal("50100"));
@@ -90,13 +90,13 @@ public class CoinsPHAdaptersTest {
     assertThat(bid1.getLimitPrice()).isEqualTo(new BigDecimal("49900"));
     assertThat(bid1.getOriginalAmount()).isEqualTo(new BigDecimal("1"));
     assertThat(bid1.getType()).isEqualTo(OrderType.BID);
-    assertThat(bid1.getCurrencyPair()).isEqualTo(CurrencyPair.BTC_PHP);
+    assertThat(bid1.getInstrument()).isEqualTo(CurrencyPair.BTC_PHP);
 
     LimitOrder ask1 = orderBook.getAsks().get(0);
     assertThat(ask1.getLimitPrice()).isEqualTo(new BigDecimal("50100"));
     assertThat(ask1.getOriginalAmount()).isEqualTo(new BigDecimal("1"));
     assertThat(ask1.getType()).isEqualTo(OrderType.ASK);
-    assertThat(ask1.getCurrencyPair()).isEqualTo(CurrencyPair.BTC_PHP);
+    assertThat(ask1.getInstrument()).isEqualTo(CurrencyPair.BTC_PHP);
   }
 
   @Test
@@ -133,7 +133,7 @@ public class CoinsPHAdaptersTest {
     assertThat(trade1.getPrice()).isEqualTo(new BigDecimal("50000"));
     assertThat(trade1.getOriginalAmount()).isEqualTo(new BigDecimal("0.1"));
     assertThat(trade1.getType()).isEqualTo(OrderType.ASK);
-    assertThat(trade1.getCurrencyPair()).isEqualTo(CurrencyPair.BTC_PHP);
+    assertThat(trade1.getInstrument()).isEqualTo(CurrencyPair.BTC_PHP);
     assertThat(trade1.getTimestamp()).isEqualTo(new Date(1617321600000L));
     assertThat(trade1.getId()).isEqualTo("12345");
 
@@ -141,7 +141,7 @@ public class CoinsPHAdaptersTest {
     assertThat(trade2.getPrice()).isEqualTo(new BigDecimal("50100"));
     assertThat(trade2.getOriginalAmount()).isEqualTo(new BigDecimal("0.2"));
     assertThat(trade2.getType()).isEqualTo(OrderType.BID);
-    assertThat(trade2.getCurrencyPair()).isEqualTo(CurrencyPair.BTC_PHP);
+    assertThat(trade2.getInstrument()).isEqualTo(CurrencyPair.BTC_PHP);
     assertThat(trade2.getTimestamp()).isEqualTo(new Date(1617321700000L));
     assertThat(trade2.getId()).isEqualTo("12346");
   }

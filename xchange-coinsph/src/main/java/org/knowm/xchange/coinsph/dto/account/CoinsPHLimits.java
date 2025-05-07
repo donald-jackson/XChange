@@ -22,18 +22,18 @@ public class CoinsPHLimits {
   private final Map<String, Object> additionalProperties = new HashMap<>();
 
   public CoinsPHLimits(
-      @JsonProperty("cashInLimit") BigDecimal cashInLimit,
-      @JsonProperty("cashInRemaining") BigDecimal cashInRemaining,
-      @JsonProperty("cashOutLimit") BigDecimal cashOutLimit,
-      @JsonProperty("cashOutRemaining") BigDecimal cashOutRemaining,
-      @JsonProperty("totalWithdrawLimit") BigDecimal totalWithdrawLimit,
-      @JsonProperty("totalWithdrawRemaining") BigDecimal totalWithdrawRemaining) {
-    this.cashInLimit = cashInLimit;
-    this.cashInRemaining = cashInRemaining;
-    this.cashOutLimit = cashOutLimit;
-    this.cashOutRemaining = cashOutRemaining;
-    this.totalWithdrawLimit = totalWithdrawLimit;
-    this.totalWithdrawRemaining = totalWithdrawRemaining;
+      @JsonProperty("cashInLimit") String cashInLimit,
+      @JsonProperty("cashInRemaining") String cashInRemaining,
+      @JsonProperty("cashOutLimit") String cashOutLimit,
+      @JsonProperty("cashOutRemaining") String cashOutRemaining,
+      @JsonProperty("totalWithdrawLimit") String totalWithdrawLimit,
+      @JsonProperty("totalWithdrawRemaining") String totalWithdrawRemaining) {
+    this.cashInLimit = new BigDecimal(cashInLimit);
+    this.cashInRemaining = new BigDecimal(cashInRemaining);
+    this.cashOutLimit = new BigDecimal(cashOutLimit);
+    this.cashOutRemaining = new BigDecimal(cashOutRemaining);
+    this.totalWithdrawLimit = new BigDecimal(totalWithdrawLimit);
+    this.totalWithdrawRemaining = new BigDecimal(totalWithdrawRemaining);
   }
 
   @JsonAnySetter
