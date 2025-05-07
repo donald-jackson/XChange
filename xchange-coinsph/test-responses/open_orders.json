@@ -1,0 +1,19 @@
+[ {
+  "clientOrderId" : "91974381-fdfa-45af-bbd2-493c9e9354ca",
+  "cummulativeQuoteQty" : 0,
+  "executedQty" : 0,
+  "orderId" : 1944812778561429504,
+  "origQty" : 0.00001,
+  "origQuoteOrderQty" : 53.789917,
+  "price" : 5378991.7,
+  "side" : "BUY",
+  "status" : "NEW",
+  "stopPrice" : 0,
+  "symbol" : "BTCPHP",
+  "time" : 1746575749636,
+  "timeInForce" : "GTC",
+  "type" : "LIMIT",
+  "updateTime" : 1746575749736,
+  "additionalProperties" : { },
+  "working" : true
+} ]

@@ -1,0 +1,91 @@
+[ {
+  "id" : 1933346507835793412,
+  "price" : 83012.460000000000000000,
+  "qty" : 0.002600000000000000,
+  "quoteQty" : 215.832396,
+  "time" : 1745208863654,
+  "additionalProperties" : { },
+  "buyerMaker" : false,
+  "bestMatch" : false
+}, {
+  "id" : 1933346507835793413,
+  "price" : 83012.640000000000000000,
+  "qty" : 0.003800000000000000,
+  "quoteQty" : 315.448032,
+  "time" : 1745208863654,
+  "additionalProperties" : { },
+  "buyerMaker" : false,
+  "bestMatch" : false
+}, {
+  "id" : 1933346507835793414,
+  "price" : 83013.010000000000000000,
+  "qty" : 0.007522300000000000,
+  "quoteQty" : 624.448765123,
+  "time" : 1745208863654,
+  "additionalProperties" : { },
+  "buyerMaker" : false,
+  "bestMatch" : false
+}, {
+  "id" : 1933495239088758784,
+  "price" : 82998.560000000000000000,
+  "qty" : 0.000100000000000000,
+  "quoteQty" : 8.299856,
+  "time" : 1745226593801,
+  "additionalProperties" : { },
+  "buyerMaker" : true,
+  "bestMatch" : false
+}, {
+  "id" : 1936156073451544577,
+  "price" : 82998.560000000000000000,
+  "qty" : 0.000180700000000000,
+  "quoteQty" : 14.997839792,
+  "time" : 1745543789975,
+  "additionalProperties" : { },
+  "buyerMaker" : true,
+  "bestMatch" : false
+}, {
+  "id" : 1936311364092649474,
+  "price" : 83013.010000000000000000,
+  "qty" : 0.000120400000000000,
+  "quoteQty" : 9.994766404,
+  "time" : 1745562302062,
+  "additionalProperties" : { },
+  "buyerMaker" : false,
+  "bestMatch" : false
+}, {
+  "id" : 1938401037900275712,
+  "price" : 82998.560000000000000000,
+  "qty" : 0.001000000000000000,
+  "quoteQty" : 82.99856,
+  "time" : 1745811410592,
+  "additionalProperties" : { },
+  "buyerMaker" : true,
+  "bestMatch" : false
+}, {
+  "id" : 1938524835165200385,
+  "price" : 83013.010000000000000000,
+  "qty" : 0.000024000000000000,
+  "quoteQty" : 1.99231224,
+  "time" : 1745826168376,
+  "additionalProperties" : { },
+  "buyerMaker" : false,
+  "bestMatch" : false
+}, {
+  "id" : 1939267997802389505,
+  "price" : 82998.560000000000000000,
+  "qty" : 0.001000000000000000,
+  "quoteQty" : 82.99856,
+  "time" : 1745914760266,
+  "additionalProperties" : { },
+  "buyerMaker" : true,
+  "bestMatch" : false
+}, {
+  "id" : 1943597291718533121,
+  "price" : 82998.560000000000000000,
+  "qty" : 0.000206000000000000,
+  "quoteQty" : 17.09770336,
+  "time" : 1746430852318,
+  "additionalProperties" : { },
+  "buyerMaker" : true,
+  "bestMatch" : true
+} ]

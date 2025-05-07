@@ -1,0 +1,51 @@
+{
+  "accountType" : "SPOT",
+  "canDeposit" : true,
+  "canTrade" : true,
+  "canWithdraw" : true,
+  "balances" : [ {
+    "asset" : "BTC",
+    "free" : 0.00000999,
+    "locked" : 0,
+    "additionalProperties" : { }
+  }, {
+    "asset" : "PHP",
+    "free" : 393.5,
+    "locked" : 53.78,
+    "additionalProperties" : { }
+  } ],
+  "token" : "PHP",
+  "daily" : {
+    "cashInLimit" : 50000000000,
+    "cashInRemaining" : 50000000000,
+    "cashOutLimit" : 50000000000,
+    "cashOutRemaining" : 50000000000,
+    "totalWithdrawLimit" : 5000000000000001,
+    "totalWithdrawRemaining" : 5000000000000001,
+    "additionalProperties" : { }
+  },
+  "monthly" : {
+    "cashInLimit" : 5000000000000001,
+    "cashInRemaining" : 5000000000000001,
+    "cashOutLimit" : 5000000000000001,
+    "cashOutRemaining" : 5000000000000001,
+    "totalWithdrawLimit" : 5000000000000001,
+    "totalWithdrawRemaining" : 5000000000000001,
+    "additionalProperties" : { }
+  },
+  "annually" : {
+    "cashInLimit" : 5000000000000001,
+    "cashInRemaining" : 5000000000000001,
+    "cashOutLimit" : 5000000000000001,
+    "cashOutRemaining" : 5000000000000001,
+    "totalWithdrawLimit" : 5000000000000001,
+    "totalWithdrawRemaining" : 5000000000000001,
+    "additionalProperties" : { }
+  },
+  "updateTime" : 1746556827376,
+  "code" : null,
+  "msg" : null,
+  "additionalProperties" : { },
+  "error" : false,
+  "errorMessage" : null
+}

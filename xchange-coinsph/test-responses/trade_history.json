@@ -1,0 +1,15 @@
+[ {
+  "symbol" : "BTCPHP",
+  "id" : 1944754136319483905,
+  "orderId" : 1944754049765826560,
+  "price" : 5270625.8,
+  "qty" : 0.00001,
+  "quoteQty" : 52.706258,
+  "commission" : 1E-8,
+  "commissionAsset" : "BTC",
+  "time" : 1746568758941,
+  "additionalProperties" : { },
+  "bestMatch" : false,
+  "buyer" : true,
+  "maker" : true
+} ]
