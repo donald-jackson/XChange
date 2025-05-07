@@ -3,7 +3,7 @@ package org.knowm.xchange.coinsph.service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import org.knowm.xchange.Exchange;
+import org.knowm.xchange.coinsph.CoinsPHExchange;
 import org.knowm.xchange.coinsph.dto.trade.CoinsPHCancelOrderResponse;
 import org.knowm.xchange.coinsph.dto.trade.CoinsPHOrder;
 import org.knowm.xchange.coinsph.dto.trade.CoinsPHOrderResponse;
@@ -22,7 +22,7 @@ public class CoinsPHTradeServiceRaw extends CoinsPHBaseService {
    *
    * @param exchange the exchange to use
    */
-  public CoinsPHTradeServiceRaw(Exchange exchange) {
+  public CoinsPHTradeServiceRaw(CoinsPHExchange exchange) {
     super(exchange);
   }
 

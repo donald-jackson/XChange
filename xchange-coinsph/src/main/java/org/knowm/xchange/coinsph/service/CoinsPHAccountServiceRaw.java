@@ -2,7 +2,7 @@ package org.knowm.xchange.coinsph.service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import org.knowm.xchange.Exchange;
+import org.knowm.xchange.coinsph.CoinsPHExchange;
 import org.knowm.xchange.coinsph.dto.account.CoinsPHAccountInfo;
 import org.knowm.xchange.coinsph.dto.account.CoinsPHDepositAddress;
 import org.knowm.xchange.coinsph.dto.account.CoinsPHWithdrawResponse;
@@ -16,7 +16,7 @@ public class CoinsPHAccountServiceRaw extends CoinsPHBaseService {
    *
    * @param exchange the exchange to use
    */
-  public CoinsPHAccountServiceRaw(Exchange exchange) {
+  public CoinsPHAccountServiceRaw(CoinsPHExchange exchange) {
     super(exchange);
   }
 

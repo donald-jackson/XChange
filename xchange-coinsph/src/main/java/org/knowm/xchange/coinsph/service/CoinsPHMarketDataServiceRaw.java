@@ -2,8 +2,8 @@ package org.knowm.xchange.coinsph.service;
 
 import java.io.IOException;
 import java.util.List;
-import org.knowm.xchange.Exchange;
 import org.knowm.xchange.coinsph.CoinsPH;
+import org.knowm.xchange.coinsph.CoinsPHExchange;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHOrderbook;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHTicker24h;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsPHTrade;
@@ -18,7 +18,7 @@ public class CoinsPHMarketDataServiceRaw extends CoinsPHBaseService {
    *
    * @param exchange the exchange to use
    */
-  public CoinsPHMarketDataServiceRaw(Exchange exchange) {
+  public CoinsPHMarketDataServiceRaw(CoinsPHExchange exchange) {
     super(exchange);
   }
 
