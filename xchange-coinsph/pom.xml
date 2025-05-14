@@ -74,6 +74,7 @@
                 <configuration>
                     <systemPropertyVariables>
                         <javax.net.debug>ssl,handshake</javax.net.debug>
+                        <https.protocols>TLSv1.2</https.protocols>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
