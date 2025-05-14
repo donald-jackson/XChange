@@ -1,0 +1,147 @@
+package org.knowm.xchange.coinsph;
+
+// TODO: Add necessary imports as classes are created
+
+import java.util.Map; // Will be used in remoteInit
+import org.apache.commons.lang3.ObjectUtils; // May be used
+import org.knowm.xchange.BaseExchange;
+import org.knowm.xchange.Exchange;
+import org.knowm.xchange.ExchangeSpecification;
+// TODO: Replace with Coinsph specific DTOs and Services
+// import org.knowm.xchange.coinsph.dto.account.CoinsphAssetDetail; // Example
+import org.knowm.xchange.coinsph.dto.meta.CoinsphExchangeInfo;
+import org.knowm.xchange.coinsph.service.CoinsphAccountService;
+import org.knowm.xchange.coinsph.service.CoinsphMarketDataService;
+import org.knowm.xchange.coinsph.service.CoinsphMarketDataServiceRaw;
+import org.knowm.xchange.coinsph.service.CoinsphTradeService;
+import org.knowm.xchange.client.ResilienceRegistries;
+import org.knowm.xchange.currency.CurrencyPair; // Will be used in remoteInit
+import org.knowm.xchange.exceptions.ExchangeException;
+import org.knowm.xchange.utils.AuthUtils;
+import si.mazi.rescu.SynchronizedValueFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.knowm.xchange.coinsph.CoinsphTimestampFactory;
+import org.knowm.xchange.coinsph.CoinsphResilience;
+import org.knowm.xchange.coinsph.CoinsphAdapters;
+
+
+public class CoinsphExchange extends BaseExchange implements Exchange {
+  private static final Logger LOG = LoggerFactory.getLogger(CoinsphExchange.class);
+
+  // Coins.ph specific URLs
+  private static final String PRODUCTION_URL = "https://api.coins.ph"; // Placeholder, verify actual URL
+  public static final String SANDBOX_URL = "https://9001.pl-qa.coinsxyz.me";
+
+  protected static ResilienceRegistries RESILIENCE_REGISTRIES;
+  protected SynchronizedValueFactory<Long> timestampFactory;
+
+  @Override
+  protected void initServices() {
+    this.timestampFactory =
+        CoinsphTimestampFactory.createFactory(
+            getPublicApi(), getExchangeSpecification(), getResilienceRegistries());
+    this.marketDataService = new CoinsphMarketDataService(this, getResilienceRegistries());
+    this.tradeService = new CoinsphTradeService(this, getResilienceRegistries());
+    this.accountService = new CoinsphAccountService(this, getResilienceRegistries());
+  }
+
+  public SynchronizedValueFactory<Long> getTimestampFactory() {
+    return timestampFactory;
+  }
+
+  @Override
+  public SynchronizedValueFactory<Long> getNonceFactory() {
+    // Coins.ph uses a timestamp for signed requests, similar to Binance.
+    // The timestampFactory provides this synchronized time.
+    return timestampFactory;
+  }
+
+  public static void resetResilienceRegistries() {
+    RESILIENCE_REGISTRIES = null;
+  }
+
+  @Override
+  public ResilienceRegistries getResilienceRegistries() {
+    if (RESILIENCE_REGISTRIES == null) {
+      RESILIENCE_REGISTRIES = CoinsphResilience.createRegistries();
+    }
+    return RESILIENCE_REGISTRIES;
+  }
+
+  @Override
+  public ExchangeSpecification getDefaultExchangeSpecification() {
+    ExchangeSpecification spec = new ExchangeSpecification(this.getClass());
+    spec.setSslUri(PRODUCTION_URL); // Default to production
+    spec.setHost("api.coins.ph"); // Placeholder, verify actual host
+    spec.setPort(443); // Default HTTPS port
+    spec.setExchangeName("Coins.ph");
+    spec.setExchangeDescription("Coins.ph Exchange.");
+    spec.setExchangeSpecificParametersItem(USE_SANDBOX, false);
+    AuthUtils.setApiAndSecretKey(spec, "coinsph"); // For storing API key/secret in properties file
+    return spec;
+  }
+
+  @Override
+  public void applySpecification(ExchangeSpecification exchangeSpecification) {
+    concludeHostParams(exchangeSpecification); // Set correct URL based on sandbox mode
+    super.applySpecification(exchangeSpecification);
+  }
+
+  public boolean usingSandbox() {
+    return Boolean.TRUE.equals(
+        exchangeSpecification.getExchangeSpecificParametersItem(USE_SANDBOX));
+  }
+
+  @Override
+  public void remoteInit() {
+    try {
+      LOG.debug("Starting remoteInit for Coins.ph");
+      // Fetch exchange info
+      CoinsphMarketDataServiceRaw marketDataServiceRaw = (CoinsphMarketDataServiceRaw) this.marketDataService;
+      CoinsphExchangeInfo exchangeInfo = marketDataServiceRaw.getPublicApi().exchangeInfo(); // Direct call to public API
+      LOG.debug("Fetched CoinsphExchangeInfo: {}", exchangeInfo);
+
+      // Adapt to XChange DTOs
+      // Asset details are not part of Coins.ph exchangeInfo, so pass null
+      exchangeMetaData = CoinsphAdapters.adaptExchangeMetaData(exchangeInfo);
+      LOG.debug("Adapted ExchangeMetaData: {}", exchangeMetaData);
+
+      // Symbol mapping is handled within CoinsphAdapters.toCurrencyPair and adaptExchangeMetaData
+      // No explicit putSymbolMapping needed here if CoinsphAdapters is robust.
+
+      // Resync timestamp factory after potentially long call
+      if (timestampFactory instanceof CoinsphTimestampFactory) {
+        ((CoinsphTimestampFactory) timestampFactory).resync();
+      }
+      LOG.info("Coins.ph remoteInit finished successfully.");
+
+    } catch (Exception e) {
+      // SynchronizedValueFactory should not throw an exception, so we can catch them here.
+      if (timestampFactory instanceof CoinsphTimestampFactory) {
+        ((CoinsphTimestampFactory) timestampFactory).resync(); // Try to resync time even if remoteInit failed
+      }
+      throw new ExchangeException("Failed to initialize Coins.ph exchange: " + e.getMessage(), e);
+    }
+  }
+
+  protected boolean isAuthenticated() {
+    return exchangeSpecification != null
+        && exchangeSpecification.getApiKey() != null
+        && exchangeSpecification.getSecretKey() != null;
+  }
+
+  /** Adjust host parameters depending on exchange specific parameters */
+  private static void concludeHostParams(ExchangeSpecification exchangeSpecification) {
+    if (Boolean.TRUE.equals(exchangeSpecification.getExchangeSpecificParametersItem(USE_SANDBOX))) {
+      exchangeSpecification.setSslUri(SANDBOX_URL);
+      // Update host if necessary for sandbox
+      // spec.setHost("9001.pl-qa.coinsxyz.me"); // Example, if different from SslUri's host
+    } else {
+      exchangeSpecification.setSslUri(PRODUCTION_URL);
+      // Update host if necessary for production
+      // spec.setHost("api.coins.ph"); // Example
+    }
+  }
+}
