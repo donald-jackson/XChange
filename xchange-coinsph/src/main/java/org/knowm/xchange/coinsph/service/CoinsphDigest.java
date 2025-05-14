@@ -52,39 +52,45 @@ public class CoinsphDigest implements ParamsDigest {
   private String buildCanonicalQueryString(RestInvocation invocation) {
     Map<String, String> actualQueryParams = new TreeMap<>(); // TreeMap for sorting by key
 
-    // Get the map of all parameters, grouped by annotation type
-    Map<Class<? extends Annotation>, si.mazi.rescu.Params> allAnnotatedParams = invocation.getParamsMap();
-    if (allAnnotatedParams == null || allAnnotatedParams.isEmpty()) {
-        logger.debug("No annotated parameters found in invocation.");
+    // Get the map of Params objects, grouped by annotation type.
+    Map<Class<? extends Annotation>, si.mazi.rescu.Params> allParamsGroupedByAnnotation = invocation.getParamsMap();
+    if (allParamsGroupedByAnnotation == null) {
+        logger.debug("invocation.getParamsMap() returned null.");
         return "";
     }
 
     // Get the Params object specifically for @QueryParam
-    si.mazi.rescu.Params queryParamsObject = allAnnotatedParams.get(QueryParam.class);
-    if (queryParamsObject == null) {
-        logger.debug("No @QueryParam annotated parameters found.");
+    si.mazi.rescu.Params queryParamsAsParamsObject = allParamsGroupedByAnnotation.get(QueryParam.class);
+    if (queryParamsAsParamsObject == null) {
+        logger.debug("No Params object found for @QueryParam.");
         return "";
     }
 
-    Set<String> paramNames = queryParamsObject.getParamNames();
-    if (paramNames == null || paramNames.isEmpty()) {
-        logger.debug("No parameter names found for @QueryParam.");
+    // Now, get the actual Map<String, Object> from this specific Params object
+    Map<String, Object> queryParamsNameValueMap = queryParamsAsParamsObject.get(QueryParam.class);
+    if (queryParamsNameValueMap == null || queryParamsNameValueMap.isEmpty()) {
+        logger.debug("No name-value map found from queryParamsAsParamsObject.get(QueryParam.class).");
         return "";
     }
     
-    for (String paramName : paramNames) {
+    for (Map.Entry<String, Object> entry : queryParamsNameValueMap.entrySet()) {
+        String paramName = entry.getKey();
+        Object paramValue = entry.getValue();
+
         if ("signature".equals(paramName)) { // Don't include signature itself in dataToSign
             continue;
         }
 
-        // Get the raw parameter value from the Params object for QueryParam
-        // This value might be a SynchronizedValueFactory or the actual value if already resolved.
-        // ResCU's ParamsDigestInvocationHandler calls resolveFactories before calling digestParams,
-        // so these should be resolved values.
-        Object paramValue = queryParamsObject.getParamValue(paramName);
-
+        // paramValue here should be resolved as ParamsDigestInvocationHandler calls resolveFactories.
         if (paramValue != null) {
-            actualQueryParams.put(paramName, paramValue.toString());
+            try {
+                String encodedValue = java.net.URLEncoder.encode(paramValue.toString(), java.nio.charset.StandardCharsets.UTF_8.toString());
+                actualQueryParams.put(paramName, encodedValue);
+            } catch (java.io.UnsupportedEncodingException e) {
+                // Should not happen with UTF-8
+                logger.error("UTF-8 encoding not supported, cannot build query string for signature", e);
+                throw new RuntimeException("UTF-8 encoding not supported", e);
+            }
         } else {
             // As per Coins.ph docs (and common practice), null parameters are typically omitted from the signature string.
             logger.debug("Query param '{}' is null, omitting from signature string.", paramName);
