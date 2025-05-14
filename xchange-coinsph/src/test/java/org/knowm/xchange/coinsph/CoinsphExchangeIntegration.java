@@ -38,7 +38,7 @@ public class CoinsphExchangeIntegration {
   private AccountService accountService;
   private TradeService tradeService;
 
-  private static final String SANDBOX_API_URL = "https://9001.pl-qa.coinsxyz.me";
+  private static final String SANDBOX_API_URL = "https://172.16.249.144:9999";
   private static final String API_KEY = "MjJGM9XKjXdM073QdG3kMH8ijLjNinfXJlOz4l8JF2QBZWUST3uSvSC9psjIMmZx";
   private static final String SECRET_KEY = "lZBfiG4xgXDYLYpwu0IXvLUmekJvkoLM69q7oxM2ttiup1CPcM8NA9Tr46eKlVnG";
 
@@ -53,9 +53,11 @@ public class CoinsphExchangeIntegration {
   @BeforeAll
   public void setUp() {
     ExchangeSpecification exSpec = new CoinsphExchange().getDefaultExchangeSpecification();
-    exSpec.setSslUri(SANDBOX_API_URL);
+    exSpec.setSslUri(SANDBOX_API_URL); // This will be correctly (re-)set by concludeHostParams if USE_SANDBOX is true
     exSpec.setApiKey(API_KEY);
     exSpec.setSecretKey(SECRET_KEY);
+    exSpec.setExchangeSpecificParametersItem(Exchange.USE_SANDBOX, true); // Ensure sandbox is used
+    exSpec.setExchangeSpecificParametersItem(Exchange.PARAM_TRUST_ALL_SSL_CERTIFICATES, true); // Disable SSL verification for sandbox tunnel
     // Removed SPECIFIC_PARAM_VERBOSE and SPECIFIC_PARAM_OUTPUT_JSON_TO_LOGGER as they are deprecated
     // JSON logging/saving for unit tests will be handled separately.
     // exSpec.setShouldLoadRemoteMetaData(false); // Keep true to test remoteInit
