@@ -46,29 +46,39 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
 
   public CoinsphOrder placeCoinsphMarketOrder(MarketOrder marketOrder)
       throws IOException, CoinsphException {
-    CoinsphNewOrderRequest request = new CoinsphNewOrderRequest();
-    request.setSymbol(CoinsphAdapters.toSymbol(marketOrder.getCurrencyPair()));
-    request.setSide(CoinsphAdapters.toSide(marketOrder.getType()));
-    request.setType(CoinsphAdapters.toOrderType(marketOrder)); // Should be MARKET
+    String symbol = CoinsphAdapters.toSymbol(marketOrder.getCurrencyPair());
+    org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(marketOrder.getType());
+    org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.MARKET; // Explicitly MARKET
+
+    BigDecimal quantity = null;
+    BigDecimal quoteOrderQty = null;
 
     if (marketOrder.hasFlag(CoinsphAdapters.CoinsphOrderFlags.QUOTE_ORDER_QTY)) {
-      request.setQuoteOrderQty(marketOrder.getOriginalAmount()); // If flag is set, originalAmount is quote amount
+      quoteOrderQty = marketOrder.getOriginalAmount();
     } else {
-      request.setQuantity(marketOrder.getOriginalAmount());
+      quantity = marketOrder.getOriginalAmount();
     }
     
-    request.setNewClientOrderId(marketOrder.getUserReference());
-    request.setRecvWindow(exchange.getRecvWindow());
-    // timeInForce is generally not applicable or allowed for MARKET orders by Coins.ph
-    // price and stopPrice are not for basic MARKET orders
+    String newClientOrderId = marketOrder.getUserReference();
+    Long recvWindow = exchange.getRecvWindow();
+    // timeInForce, price, stopPrice are null for basic MARKET orders
 
     return decorateApiCall(
             () ->
                 coinsphAuthenticated.newOrder(
                     apiKey,
+                    symbol,
+                    side,
+                    type,
+                    null, // timeInForce
+                    quantity,
+                    quoteOrderQty,
+                    null, // price
+                    newClientOrderId,
+                    null, // stopPrice
+                    recvWindow,
                     timestampFactory,
-                    signatureCreator,
-                    request))
+                    signatureCreator))
         // .withRetry(retry("newOrder"))
         // .withRateLimiter(rateLimiter(ORDERS_RATE_LIMITER))
         .call();
@@ -76,31 +86,40 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
 
   public CoinsphOrder placeCoinsphLimitOrder(LimitOrder limitOrder)
       throws IOException, CoinsphException {
-    CoinsphNewOrderRequest request = new CoinsphNewOrderRequest();
-    request.setSymbol(CoinsphAdapters.toSymbol(limitOrder.getCurrencyPair()));
-    request.setSide(CoinsphAdapters.toSide(limitOrder.getType()));
-    request.setType(CoinsphAdapters.toOrderType(limitOrder)); // Should be LIMIT
-    String timeInForceValue = "GTC"; // Default for limit orders if not specified
+    String symbol = CoinsphAdapters.toSymbol(limitOrder.getCurrencyPair());
+    org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(limitOrder.getType());
+    org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.LIMIT; // Explicitly LIMIT
+
+    org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce timeInForce = org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce.GTC; // Default
     for (Order.IOrderFlags flag : limitOrder.getOrderFlags()) {
       if (flag instanceof org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) {
-        timeInForceValue = ((org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag).getValue();
+        timeInForce = (org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag;
         break;
       }
     }
-    request.setTimeInForce(timeInForceValue);
-    request.setQuantity(limitOrder.getOriginalAmount());
-    request.setPrice(limitOrder.getLimitPrice());
-    request.setNewClientOrderId(limitOrder.getUserReference());
-    request.setRecvWindow(exchange.getRecvWindow());
-    // quoteOrderQty and stopPrice are not for basic LIMIT orders
+    
+    BigDecimal quantity = limitOrder.getOriginalAmount();
+    BigDecimal price = limitOrder.getLimitPrice();
+    String newClientOrderId = limitOrder.getUserReference();
+    Long recvWindow = exchange.getRecvWindow();
+    // quoteOrderQty and stopPrice are null for basic LIMIT orders
 
     return decorateApiCall(
             () ->
                 coinsphAuthenticated.newOrder(
                     apiKey,
+                    symbol,
+                    side,
+                    type,
+                    timeInForce,
+                    quantity,
+                    null, // quoteOrderQty
+                    price,
+                    newClientOrderId,
+                    null, // stopPrice
+                    recvWindow,
                     timestampFactory,
-                    signatureCreator,
-                    request))
+                    signatureCreator))
         // .withRetry(retry("newOrder"))
         // .withRateLimiter(rateLimiter(ORDERS_RATE_LIMITER))
         .call();
@@ -108,51 +127,59 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
 
   public CoinsphOrder placeCoinsphStopOrder(org.knowm.xchange.dto.trade.StopOrder stopOrder)
       throws IOException, CoinsphException {
-    CoinsphNewOrderRequest request = new CoinsphNewOrderRequest();
-    request.setSymbol(CoinsphAdapters.toSymbol(stopOrder.getCurrencyPair()));
-    request.setSide(CoinsphAdapters.toSide(stopOrder.getType()));
+    String symbol = CoinsphAdapters.toSymbol(stopOrder.getCurrencyPair());
+    org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(stopOrder.getType());
     
-    // Determine Coins.ph order type (STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT)
-    // XChange StopOrder doesn't distinguish between STOP_LOSS and TAKE_PROFIT directly.
-    // It's usually inferred by stopPrice vs current market price.
-    // Coins.ph requires explicit types.
-    // For simplicity, we'll assume STOP_LOSS_LIMIT if limitPrice is present, else STOP_LOSS.
-    // User might need to use flags to specify TAKE_PROFIT variants.
+    org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type;
+    BigDecimal price = null; // Limit price for _LIMIT variants
+    org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce timeInForce = null;
+
+    // Infer type: STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT
+    // Defaulting to STOP_LOSS variants. User can use flags for TAKE_PROFIT.
+    // TODO: Add flag handling for TAKE_PROFIT vs STOP_LOSS selection.
     if (stopOrder.getLimitPrice() != null) {
-        request.setType("STOP_LOSS_LIMIT"); // Or TAKE_PROFIT_LIMIT based on flags/convention
-        request.setPrice(stopOrder.getLimitPrice()); // This is the limit price for the triggered order
-        String stopOrderTimeInForceValue = "GTC"; // Default for the limit part of a stop-limit order
+        type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.STOP_LOSS_LIMIT;
+        price = stopOrder.getLimitPrice();
+        timeInForce = org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce.GTC; // Default for limit part
         for (Order.IOrderFlags flag : stopOrder.getOrderFlags()) {
           if (flag instanceof org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) {
-            stopOrderTimeInForceValue = ((org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag).getValue();
+            timeInForce = (org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag;
             break;
           }
         }
-        request.setTimeInForce(stopOrderTimeInForceValue); // e.g. GTC for the limit part
     } else {
-        request.setType("STOP_LOSS"); // Or TAKE_PROFIT based on flags/convention
-        // For MARKET stop orders (STOP_LOSS, TAKE_PROFIT), timeInForce is usually not applicable/allowed.
+        type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.STOP_LOSS;
+        // timeInForce is generally null for market-triggering stop orders
     }
-    // TODO: Add logic to differentiate STOP_LOSS vs TAKE_PROFIT based on XChange flags or conventions if possible.
-    // For now, defaulting to STOP_LOSS variants.
 
+    BigDecimal quantity = null;
+    BigDecimal quoteOrderQty = null;
     if (stopOrder.hasFlag(CoinsphAdapters.CoinsphOrderFlags.QUOTE_ORDER_QTY) && stopOrder.getLimitPrice() == null) {
-      // Only for STOP_LOSS (market) or TAKE_PROFIT (market) if quoteOrderQty is intended
-      request.setQuoteOrderQty(stopOrder.getOriginalAmount());
+      quoteOrderQty = stopOrder.getOriginalAmount();
     } else {
-      request.setQuantity(stopOrder.getOriginalAmount());
+      quantity = stopOrder.getOriginalAmount();
     }
-    request.setStopPrice(stopOrder.getStopPrice());
-    request.setNewClientOrderId(stopOrder.getUserReference());
-    request.setRecvWindow(exchange.getRecvWindow());
+
+    BigDecimal stopPriceValue = stopOrder.getStopPrice();
+    String newClientOrderId = stopOrder.getUserReference();
+    Long recvWindow = exchange.getRecvWindow();
 
     return decorateApiCall(
             () ->
                 coinsphAuthenticated.newOrder(
                     apiKey,
+                    symbol,
+                    side,
+                    type,
+                    timeInForce,
+                    quantity,
+                    quoteOrderQty,
+                    price, // This is the limit price for _LIMIT variants
+                    newClientOrderId,
+                    stopPriceValue, // This is the stopPrice
+                    recvWindow,
                     timestampFactory,
-                    signatureCreator,
-                    request))
+                    signatureCreator))
         // .withRetry(retry("newOrder"))
         // .withRateLimiter(rateLimiter(ORDERS_RATE_LIMITER))
         .call();

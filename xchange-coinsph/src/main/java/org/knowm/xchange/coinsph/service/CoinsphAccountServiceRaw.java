@@ -47,7 +47,7 @@ public List<CoinsphTradeFee> getCoinsphTradeFees(String symbol) throws IOExcepti
     return decorateApiCall(
             () ->
                 coinsphAuthenticated.createListenKey(
-                    apiKey, timestampFactory, signatureCreator))
+                    apiKey))
         // .withRetry(retry("createListenKey")) // Define in CoinsphResilience
         // .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER)) // Define in CoinsphResilience
         .call();
@@ -57,7 +57,7 @@ public List<CoinsphTradeFee> getCoinsphTradeFees(String symbol) throws IOExcepti
     decorateApiCall(
             () ->
                 coinsphAuthenticated.keepAliveListenKey(
-                    apiKey, timestampFactory, signatureCreator, listenKey))
+                    apiKey, listenKey))
         // .withRetry(retry("keepAliveListenKey")) // Define in CoinsphResilience
         // .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER)) // Define in CoinsphResilience
         .call();
@@ -67,7 +67,7 @@ public List<CoinsphTradeFee> getCoinsphTradeFees(String symbol) throws IOExcepti
     decorateApiCall(
             () ->
                 coinsphAuthenticated.closeListenKey(
-                    apiKey, timestampFactory, signatureCreator, listenKey))
+                    apiKey, listenKey))
         // .withRetry(retry("closeListenKey")) // Define in CoinsphResilience
         // .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER)) // Define in CoinsphResilience
         .call();

@@ -10,6 +10,7 @@ import jakarta.ws.rs.Path;
 // import jakarta.ws.rs.PathParam; // Not used yet
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.Consumes; // Added for @Consumes
 import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -36,21 +37,19 @@ import si.mazi.rescu.SynchronizedValueFactory;
 public interface CoinsphAuthenticated extends Coinsph {
 
   String X_COINS_APIKEY = "X-COINS-APIKEY"; // Header name for API key
-  String X_COINS_TIMESTAMP = "X-COINS-TIMESTAMP"; // Header name for timestamp
-  String X_COINS_SIGNATURE = "X-COINS-SIGNATURE"; // Header name for signature
+  // timestamp and signature are query/body params, not headers for signing purposes.
 
-  // According to docs, signature is passed in header X-COINS-SIGNATURE
-  // timestamp is also in header X-COINS-TIMESTAMP
   // API key is in header X-COINS-APIKEY
-  // recvWindow is a query parameter
+  // timestamp, signature, recvWindow are query parameters for GET/DELETE.
+  // For POST, they are part of the payload (query string or request body).
 
   /**
    * Get current account information.
    *
-   * @param recvWindow optional, The value cannot be greater than 60000
-   * @param timestamp This will be used by Rescu to generate the X-COINS-TIMESTAMP header.
-   * @param apiKey
-   * @param signature This will be used by Rescu to generate the X-COINS-SIGNATURE header.
+   * @param apiKey API Key (Header)
+   * @param timestamp Timestamp in ms (Query Param)
+   * @param signature Signature (Query Param)
+   * @param recvWindow optional, The value cannot be greater than 60000 (Query Param)
    * @return
    * @throws IOException
    * @throws org.knowm.xchange.coinsph.dto.CoinsphException
@@ -59,8 +58,8 @@ public interface CoinsphAuthenticated extends Coinsph {
   @Path("account")
   CoinsphAccount getAccount(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @HeaderParam(X_COINS_TIMESTAMP) SynchronizedValueFactory<Long> timestamp,
-      @HeaderParam(X_COINS_SIGNATURE) ParamsDigest signature,
+      @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+      @QueryParam("signature") ParamsDigest signature,
       @QueryParam("recvWindow") Long recvWindow)
       throws IOException, CoinsphException;
 
@@ -80,8 +79,8 @@ public interface CoinsphAuthenticated extends Coinsph {
   @Path("asset/tradeFee")
   List<CoinsphTradeFee> getTradeFee(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @HeaderParam(X_COINS_TIMESTAMP) SynchronizedValueFactory<Long> timestamp,
-      @HeaderParam(X_COINS_SIGNATURE) ParamsDigest signature,
+      @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+      @QueryParam("signature") ParamsDigest signature,
       @QueryParam("symbol") String symbol,
       @QueryParam("recvWindow") Long recvWindow)
       throws IOException, CoinsphException;
@@ -108,26 +107,22 @@ public interface CoinsphAuthenticated extends Coinsph {
    */
   @POST
   @Path("order")
+  // @Consumes(MediaType.APPLICATION_JSON) // Removed, body will be empty
   CoinsphOrder newOrder(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @HeaderParam(X_COINS_TIMESTAMP) SynchronizedValueFactory<Long> timestamp,
-      @HeaderParam(X_COINS_SIGNATURE) ParamsDigest signature,
-      CoinsphNewOrderRequest newOrderRequest // Request body as DTO
-      // recvWindow is now part of CoinsphNewOrderRequest if needed by API,
-      // or can be added as a @QueryParam if it's a query parameter for this POST
-      // For Coins.ph, recvWindow is a query param for signed endpoints, so it should be separate.
-      // However, the newOrderRequest DTO already includes it as an optional field.
-      // The API docs for POST /order show recvWindow as a query parameter.
-      // Let's keep it as a query param for consistency with other signed endpoints.
-      // @QueryParam("recvWindow") Long recvWindow // This is usually for GET/DELETE. POST body should contain all.
-      // Let's assume recvWindow, if needed for POST, is part of the signed payload, so it's in the DTO.
-      // If it's a query param for POST, it needs to be added separately.
-      // The docs say: "All parameters should be sent in the JSON body for POST requests."
-      // "For GET, DELETE requests, parameters should be sent in the query string."
-      // "recvWindow is applicable to all signed endpoints."
-      // This implies for POST, recvWindow should be in the JSON body if it's part of the signed content.
-      // The DTO CoinsphNewOrderRequest includes recvWindow.
-      )
+      @QueryParam("symbol") String symbol,
+      @QueryParam("side") CoinsphOrderSide side,
+      @QueryParam("type") CoinsphOrderType type,
+      @QueryParam("timeInForce") CoinsphTimeInForce timeInForce, // Optional
+      @QueryParam("quantity") BigDecimal quantity, // Optional (one of quantity or quoteOrderQty)
+      @QueryParam("quoteOrderQty") BigDecimal quoteOrderQty, // Optional
+      @QueryParam("price") BigDecimal price, // Optional (for LIMIT orders)
+      @QueryParam("newClientOrderId") String newClientOrderId, // Optional
+      @QueryParam("stopPrice") BigDecimal stopPrice, // Optional
+      // newOrderRespType is not used by Coins.ph from what I see, default is FULL for MARKET/LIMIT
+      @QueryParam("recvWindow") Long recvWindow, // Optional
+      @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+      @QueryParam("signature") ParamsDigest signature)
       throws IOException, CoinsphException;
 
   /**
@@ -149,9 +144,9 @@ public interface CoinsphAuthenticated extends Coinsph {
   @Path("order")
   CoinsphOrder getOrderStatus(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @HeaderParam(X_COINS_TIMESTAMP) SynchronizedValueFactory<Long> timestamp,
-      @HeaderParam(X_COINS_SIGNATURE) ParamsDigest signature,
-      @QueryParam("symbol") String symbol,
+      @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+      @QueryParam("signature") ParamsDigest signature,
+      @QueryParam("symbol") String symbol, // This is actually not in the API spec for GET /order, but often included for consistency
       @QueryParam("orderId") Long orderId,
       @QueryParam("origClientOrderId") String origClientOrderId,
       @QueryParam("recvWindow") Long recvWindow)
@@ -175,9 +170,9 @@ public interface CoinsphAuthenticated extends Coinsph {
   @Path("order")
   CoinsphOrder cancelOrder(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @HeaderParam(X_COINS_TIMESTAMP) SynchronizedValueFactory<Long> timestamp,
-      @HeaderParam(X_COINS_SIGNATURE) ParamsDigest signature,
-      @QueryParam("symbol") String symbol,
+      @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+      @QueryParam("signature") ParamsDigest signature,
+      @QueryParam("symbol") String symbol, // API docs for DELETE /order list symbol
       @QueryParam("orderId") Long orderId,
       @QueryParam("origClientOrderId") String origClientOrderId,
       @QueryParam("recvWindow") Long recvWindow)
@@ -200,9 +195,7 @@ public interface CoinsphAuthenticated extends Coinsph {
   @POST
   @Path("userDataStream")
   CoinsphListenKey createListenKey(
-      @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @HeaderParam(X_COINS_TIMESTAMP) SynchronizedValueFactory<Long> timestamp,
-      @HeaderParam(X_COINS_SIGNATURE) ParamsDigest signature)
+      @HeaderParam(X_COINS_APIKEY) String apiKey)
       throws IOException, CoinsphException;
 
   /**
@@ -221,8 +214,6 @@ public interface CoinsphAuthenticated extends Coinsph {
   @Path("userDataStream")
   Void keepAliveListenKey(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @HeaderParam(X_COINS_TIMESTAMP) SynchronizedValueFactory<Long> timestamp,
-      @HeaderParam(X_COINS_SIGNATURE) ParamsDigest signature,
       @QueryParam("listenKey") String listenKey)
       throws IOException, CoinsphException;
 
@@ -241,8 +232,6 @@ public interface CoinsphAuthenticated extends Coinsph {
   @Path("userDataStream")
   Void closeListenKey(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @HeaderParam(X_COINS_TIMESTAMP) SynchronizedValueFactory<Long> timestamp,
-      @HeaderParam(X_COINS_SIGNATURE) ParamsDigest signature,
       @QueryParam("listenKey") String listenKey)
       throws IOException, CoinsphException;
 
@@ -262,8 +251,8 @@ public interface CoinsphAuthenticated extends Coinsph {
   @Path("openOrders")
   List<CoinsphOrder> getOpenOrders(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @HeaderParam(X_COINS_TIMESTAMP) SynchronizedValueFactory<Long> timestamp,
-      @HeaderParam(X_COINS_SIGNATURE) ParamsDigest signature,
+      @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+      @QueryParam("signature") ParamsDigest signature,
       @QueryParam("symbol") String symbol,
       @QueryParam("recvWindow") Long recvWindow)
       throws IOException, CoinsphException;
@@ -288,9 +277,9 @@ public interface CoinsphAuthenticated extends Coinsph {
   @Path("historyOrders") // Changed from allOrders to match Coins.ph docs
   List<CoinsphOrder> getHistoryOrders(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @HeaderParam(X_COINS_TIMESTAMP) SynchronizedValueFactory<Long> timestamp,
-      @HeaderParam(X_COINS_SIGNATURE) ParamsDigest signature,
-      @QueryParam("symbol") String symbol,
+      @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+      @QueryParam("signature") ParamsDigest signature,
+      @QueryParam("symbol") String symbol, // API docs for historyOrders require symbol
       // @QueryParam("orderId") Long orderId, // Coins.ph uses startTime/endTime for history
       @QueryParam("startTime") Long startTime,
       @QueryParam("endTime") Long endTime,
@@ -319,13 +308,13 @@ public interface CoinsphAuthenticated extends Coinsph {
   @Path("myTrades")
   List<CoinsphUserTrade> getMyTrades(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @HeaderParam(X_COINS_TIMESTAMP) SynchronizedValueFactory<Long> timestamp,
-      @HeaderParam(X_COINS_SIGNATURE) ParamsDigest signature,
-      @QueryParam("symbol") String symbol,
-      @QueryParam("orderId") Long orderId, // Not a direct filter in Coins.ph
+      @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+      @QueryParam("signature") ParamsDigest signature,
+      @QueryParam("symbol") String symbol, // API docs for myTrades require symbol
+      @QueryParam("orderId") Long orderId, // Not a direct filter in Coins.ph, but can be used by client
       @QueryParam("startTime") Long startTime,
       @QueryParam("endTime") Long endTime,
-      @QueryParam("fromTradeId") Long fromTradeId, 
+      @QueryParam("fromId") Long fromTradeId, // API doc uses fromId, not fromTradeId
       @QueryParam("limit") Integer limit,
       @QueryParam("recvWindow") Long recvWindow)
       throws IOException, CoinsphException;

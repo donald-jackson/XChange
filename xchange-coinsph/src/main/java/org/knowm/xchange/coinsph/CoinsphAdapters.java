@@ -207,27 +207,38 @@ public final class CoinsphAdapters {
     return new Trades(trades, lastId, Trades.TradeSortType.SortByTimestamp);
   }
 
-  public static String toSide(OrderType orderType) {
+  public static org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide toSide(OrderType orderType) {
     switch (orderType) {
       case BID:
       case EXIT_ASK: // Assuming exit ask is a form of buy
-        return "BUY";
+        return org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide.BUY;
       case ASK:
       case EXIT_BID: // Assuming exit bid is a form of sell
-        return "SELL";
+        return org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide.SELL;
       default:
         throw new IllegalArgumentException("Unsupported order type: " + orderType);
     }
   }
 
-  public static String toOrderType(Order order) {
+  public static org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType toCoinsphOrderType(Order order) {
     if (order instanceof LimitOrder) {
-      return "LIMIT";
+      return org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.LIMIT;
     } else if (order instanceof MarketOrder) {
-      return "MARKET";
+      return org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.MARKET;
+    } else if (order instanceof org.knowm.xchange.dto.trade.StopOrder) {
+      // For StopOrder, the specific type (STOP_LOSS, STOP_LOSS_LIMIT, etc.)
+      // is determined in CoinsphTradeServiceRaw based on presence of limit price.
+      // This adapter might need more context or be called differently for stop orders.
+      // For now, throwing, as direct mapping is ambiguous here.
+      // Or, could default to STOP_LOSS if no limit price, STOP_LOSS_LIMIT if limit price.
+      // This logic is better handled in the service layer (CoinsphTradeServiceRaw).
+      if (((org.knowm.xchange.dto.trade.StopOrder) order).getLimitPrice() != null) {
+        return org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.STOP_LOSS_LIMIT; // Or TAKE_PROFIT_LIMIT
+      } else {
+        return org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.STOP_LOSS; // Or TAKE_PROFIT
+      }
     }
-    // TODO: Add STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT if Coins.ph supports
-    throw new IllegalArgumentException("Unsupported order class: " + order.getClass().getName());
+    throw new IllegalArgumentException("Unsupported order class for direct CoinsphOrderType mapping: " + order.getClass().getName());
   }
   
   //  public static String toTimeInForce(Order.IOrderFlags flag) {

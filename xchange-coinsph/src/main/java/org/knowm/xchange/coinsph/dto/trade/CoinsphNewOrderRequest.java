@@ -44,4 +44,7 @@ public class CoinsphNewOrderRequest {
 
   @JsonProperty("recvWindow")
   private Long recvWindow; // Optional
+
+  @JsonProperty("timestamp")
+  private Long timestamp; // Mandatory for signed requests
 }
