@@ -58,6 +58,7 @@ public class CoinsphExchangeIntegration {
     exSpec.setSecretKey(SECRET_KEY);
     exSpec.setExchangeSpecificParametersItem(Exchange.USE_SANDBOX, true); // Ensure sandbox is used
     exSpec.setExchangeSpecificParametersItem("ignore_ssl_certificates", true); // Disable SSL verification for sandbox tunnel
+    exSpec.setExchangeSpecificParametersItem("sslSocketFactoryHostname", "9001.pl-qa.coinsxyz.me"); // Set SNI hostname
     // Removed SPECIFIC_PARAM_VERBOSE and SPECIFIC_PARAM_OUTPUT_JSON_TO_LOGGER as they are deprecated
     // JSON logging/saving for unit tests will be handled separately.
     // exSpec.setShouldLoadRemoteMetaData(false); // Keep true to test remoteInit
