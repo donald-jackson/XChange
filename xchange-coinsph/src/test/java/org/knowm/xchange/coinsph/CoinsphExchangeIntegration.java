@@ -38,7 +38,7 @@ public class CoinsphExchangeIntegration {
   private AccountService accountService;
   private TradeService tradeService;
 
-  private static final String SANDBOX_API_URL = "https://172.16.249.144:9999";
+  private static final String SANDBOX_API_URL = "http://172.16.249.144:9999";
   private static final String API_KEY = "MjJGM9XKjXdM073QdG3kMH8ijLjNinfXJlOz4l8JF2QBZWUST3uSvSC9psjIMmZx";
   private static final String SECRET_KEY = "lZBfiG4xgXDYLYpwu0IXvLUmekJvkoLM69q7oxM2ttiup1CPcM8NA9Tr46eKlVnG";
 
@@ -53,12 +53,13 @@ public class CoinsphExchangeIntegration {
   @BeforeAll
   public void setUp() {
     ExchangeSpecification exSpec = new CoinsphExchange().getDefaultExchangeSpecification();
-    exSpec.setSslUri(SANDBOX_API_URL); // This will be correctly (re-)set by concludeHostParams if USE_SANDBOX is true
+    // For HTTP, setSslUri might not be the most semantically correct,
+    // but it's what BaseExchange uses to set the host.
+    // If USE_SANDBOX is true, CoinsphExchange.concludeHostParams will set the correct http/https URI.
+    exSpec.setSslUri(SANDBOX_API_URL);
     exSpec.setApiKey(API_KEY);
     exSpec.setSecretKey(SECRET_KEY);
     exSpec.setExchangeSpecificParametersItem(Exchange.USE_SANDBOX, true); // Ensure sandbox is used
-    exSpec.setExchangeSpecificParametersItem("ignore_ssl_certificates", true); // Disable SSL verification for sandbox tunnel
-    exSpec.setExchangeSpecificParametersItem("sslSocketFactoryHostname", "9001.pl-qa.coinsxyz.me"); // Set SNI hostname
     // Removed SPECIFIC_PARAM_VERBOSE and SPECIFIC_PARAM_OUTPUT_JSON_TO_LOGGER as they are deprecated
     // JSON logging/saving for unit tests will be handled separately.
     // exSpec.setShouldLoadRemoteMetaData(false); // Keep true to test remoteInit

@@ -73,8 +73,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
-                        <javax.net.debug>ssl,handshake</javax.net.debug>
-                        <https.protocols>TLSv1.2</https.protocols>
+                        <!-- SSL debug properties removed as we are using HTTP -->
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
