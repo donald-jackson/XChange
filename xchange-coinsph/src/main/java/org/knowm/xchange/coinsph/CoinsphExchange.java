@@ -105,19 +105,21 @@ public Coinsph getPublicApi() {
   @Override
   public void applySpecification(ExchangeSpecification exchangeSpecification) {
     concludeHostParams(exchangeSpecification); // Set correct URL based on sandbox mode
-    super.applySpecification(exchangeSpecification);
 
-    // Initialize API proxies using the exchangeSpecification from superclass
-    this.publicApi = ExchangeRestProxyBuilder.forInterface(Coinsph.class, this.exchangeSpecification).build();
-    this.authenticatedApi = ExchangeRestProxyBuilder.forInterface(CoinsphAuthenticated.class, this.exchangeSpecification).build();
+    // Initialize API proxies using the provided exchangeSpecification
+    // BEFORE calling super.applySpecification() which might call remoteInit/initServices
+    this.publicApi = ExchangeRestProxyBuilder.forInterface(Coinsph.class, exchangeSpecification).build();
+    this.authenticatedApi = ExchangeRestProxyBuilder.forInterface(CoinsphAuthenticated.class, exchangeSpecification).build();
     
     // Initialize signature creator
-    if (this.exchangeSpecification.getSecretKey() != null) {
-        this.signatureCreator = CoinsphDigest.createInstance(this.exchangeSpecification.getSecretKey());
+    // Use the passed exchangeSpecification as this.exchangeSpecification might not be set yet by super
+    if (exchangeSpecification.getSecretKey() != null) {
+        this.signatureCreator = CoinsphDigest.createInstance(exchangeSpecification.getSecretKey());
     } else {
-        // Log or handle the case where secret key is not provided for authenticated services
         LOG.warn("Secret key not provided. Authenticated services will not be available.");
     }
+
+    super.applySpecification(exchangeSpecification); // Now call super, which will set this.exchangeSpecification and call initServices/remoteInit
   }
 
   public boolean usingSandbox() {
