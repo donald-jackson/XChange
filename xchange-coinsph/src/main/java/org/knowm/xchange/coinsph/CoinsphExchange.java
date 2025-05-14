@@ -19,6 +19,7 @@ import org.knowm.xchange.currency.CurrencyPair; // Will be used in remoteInit
 import org.knowm.xchange.exceptions.ExchangeException;
 import org.knowm.xchange.utils.AuthUtils;
 import si.mazi.rescu.SynchronizedValueFactory;
+import si.mazi.rescu.ParamsDigest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

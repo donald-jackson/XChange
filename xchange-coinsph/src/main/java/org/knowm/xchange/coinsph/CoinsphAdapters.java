@@ -21,7 +21,7 @@ import org.knowm.xchange.coinsph.dto.trade.CoinsphUserTrade; // For user trades
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
-import org.knowm.xchange.dto.Order.OrderFlags;
+// import org.knowm.xchange.dto.Order.OrderFlags; // Removed as OrderFlags enum is no longer in xchange-core Order.java
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.account.AccountInfo;
 import org.knowm.xchange.dto.account.Balance;
@@ -230,18 +230,18 @@ public final class CoinsphAdapters {
     throw new IllegalArgumentException("Unsupported order class: " + order.getClass().getName());
   }
   
-  public static String toTimeInForce(Order.IOrderFlags flag) {
-      if (flag == null) return "GTC"; // Default for Coins.ph if not specified
-      if (flag == OrderFlags.IMMEDIATE_OR_CANCEL) {
-        return "IOC";
-      }
-      if (flag == OrderFlags.FILL_OR_KILL) {
-        return "FOK";
-      }
-      // Other flags are not directly mapped to Coins.ph timeInForce values.
-      // GTC is a safe default if no specific TIF flag is matched.
-      return "GTC";
-  }
+  //  public static String toTimeInForce(Order.IOrderFlags flag) {
+//      if (flag == null) return "GTC"; // Default for Coins.ph if not specified
+//      if (flag == org.knowm.xchange.dto.Order.OrderFlags.IMMEDIATE_OR_CANCEL) {
+//        return "IOC";
+//      }
+//      if (flag == OrderFlags.FILL_OR_KILL) {
+//        return "FOK";
+//      }
+//      // Other flags are not directly mapped to Coins.ph timeInForce values.
+//      // GTC is a safe default if no specific TIF flag is matched.
+//      return "GTC";
+//  }
 
   public static OrderType adaptOrderType(String side) {
     switch (side.toUpperCase()) {

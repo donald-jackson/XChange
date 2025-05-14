@@ -9,8 +9,10 @@ import org.knowm.xchange.coinsph.CoinsphExchange;
 import org.knowm.xchange.coinsph.dto.CoinsphException;
 import org.knowm.xchange.coinsph.dto.trade.CoinsphNewOrderRequest; // For placing new orders
 import org.knowm.xchange.coinsph.dto.trade.CoinsphOrder;
+import org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce; // For order flags
 import org.knowm.xchange.coinsph.dto.trade.CoinsphUserTrade;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.MarketOrder;
@@ -78,7 +80,14 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
     request.setSymbol(CoinsphAdapters.toSymbol(limitOrder.getCurrencyPair()));
     request.setSide(CoinsphAdapters.toSide(limitOrder.getType()));
     request.setType(CoinsphAdapters.toOrderType(limitOrder)); // Should be LIMIT
-    request.setTimeInForce(CoinsphAdapters.toTimeInForce(limitOrder.getLimitOrderFlags()));
+    String timeInForceValue = "GTC"; // Default for limit orders if not specified
+    for (Order.IOrderFlags flag : limitOrder.getOrderFlags()) {
+      if (flag instanceof org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) {
+        timeInForceValue = ((org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag).getValue();
+        break;
+      }
+    }
+    request.setTimeInForce(timeInForceValue);
     request.setQuantity(limitOrder.getOriginalAmount());
     request.setPrice(limitOrder.getLimitPrice());
     request.setNewClientOrderId(limitOrder.getUserReference());
@@ -112,7 +121,14 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
     if (stopOrder.getLimitPrice() != null) {
         request.setType("STOP_LOSS_LIMIT"); // Or TAKE_PROFIT_LIMIT based on flags/convention
         request.setPrice(stopOrder.getLimitPrice()); // This is the limit price for the triggered order
-        request.setTimeInForce(CoinsphAdapters.toTimeInForce(stopOrder.getStopOrderFlags())); // e.g. GTC for the limit part
+        String stopOrderTimeInForceValue = "GTC"; // Default for the limit part of a stop-limit order
+        for (Order.IOrderFlags flag : stopOrder.getOrderFlags()) {
+          if (flag instanceof org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) {
+            stopOrderTimeInForceValue = ((org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag).getValue();
+            break;
+          }
+        }
+        request.setTimeInForce(stopOrderTimeInForceValue); // e.g. GTC for the limit part
     } else {
         request.setType("STOP_LOSS"); // Or TAKE_PROFIT based on flags/convention
         // For MARKET stop orders (STOP_LOSS, TAKE_PROFIT), timeInForce is usually not applicable/allowed.
@@ -162,6 +178,8 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
         throw new IllegalArgumentException(
           "CancelOrderParams must implement CancelOrderByCurrencyPair for Coins.ph");
     }
+final String finalSymbol = symbol;
+    final Long finalOrderId = orderId;
 
 
     // TODO: clientOrderId cancellation if API supports it
@@ -175,8 +193,8 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
                     apiKey,
                     timestampFactory,
                     signatureCreator,
-                    symbol,
-                    orderId,
+                    finalSymbol,
+                    finalOrderId,
                     clientOrderId, // origClientOrderId
                     exchange.getRecvWindow()))
         // .withRetry(retry("cancelOrder"))

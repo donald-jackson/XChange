@@ -44,12 +44,10 @@ public class CoinsphTradeHistoryParams extends DefaultTradeHistoryParamsTimeSpan
     this.limit = limit;
   }
 
-  @Override
   public String getStartId() {
     return startId;
   }
 
-  @Override
   public void setStartId(String startId) {
     this.startId = startId;
   }
