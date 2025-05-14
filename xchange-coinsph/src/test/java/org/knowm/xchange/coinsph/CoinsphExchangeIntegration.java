@@ -22,6 +22,9 @@ import org.knowm.xchange.dto.trade.MarketOrder;
 import org.knowm.xchange.service.account.AccountService;
 import org.knowm.xchange.service.marketdata.MarketDataService;
 import org.knowm.xchange.service.trade.TradeService;
+import java.util.Collection; // Added for getOrder
+import org.knowm.xchange.service.trade.params.orders.OrderQueryParams; // Interface for getOrder
+import org.knowm.xchange.service.trade.params.orders.DefaultQueryOrderParamInstrument; // Concrete class for getOrder
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,8 +56,8 @@ public class CoinsphExchangeIntegration {
     exSpec.setSslUri(SANDBOX_API_URL);
     exSpec.setApiKey(API_KEY);
     exSpec.setSecretKey(SECRET_KEY);
-    exSpec.getExchangeSpecificParameters().put(Exchange.SPECIFIC_PARAM_VERBOSE, true); // For full request/response logging
-    exSpec.getExchangeSpecificParameters().put(Exchange.SPECIFIC_PARAM_OUTPUT_JSON_TO_LOGGER, true); // For XChange built-in logging
+    // Removed SPECIFIC_PARAM_VERBOSE and SPECIFIC_PARAM_OUTPUT_JSON_TO_LOGGER as they are deprecated
+    // JSON logging/saving for unit tests will be handled separately.
     // exSpec.setShouldLoadRemoteMetaData(false); // Keep true to test remoteInit
 
     exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
@@ -75,7 +78,7 @@ public class CoinsphExchangeIntegration {
                     TEST_CURRENCY_PAIR, 
                     instrumentMetaData.getMinimumAmount(),
                     instrumentMetaData.getPriceScale(),
-                    instrumentMetaData.getAmountScale()); // Renamed from getVolumeScale
+                    instrumentMetaData.getVolumeScale()); // Renamed from getAmountScale
             } else {
                 logger.warn("No metadata found for {}", TEST_CURRENCY_PAIR);
             }
@@ -148,8 +151,10 @@ public class CoinsphExchangeIntegration {
       Thread.currentThread().interrupt();
     }
 
-    Order orderStatus = tradeService.getOrder(orderId);
-    assertThat(orderStatus).isNotNull();
+    Collection<Order> orderStatusResult = tradeService.getOrder(new DefaultQueryOrderParamInstrument(TEST_CURRENCY_PAIR, orderId));
+    assertThat(orderStatusResult).isNotNull().isNotEmpty();
+    Order orderStatus = orderStatusResult.iterator().next();
+    assertThat(orderStatus).isNotNull(); // Re-asserting after extracting from collection
     assertThat(orderStatus.getId()).isEqualTo(orderId);
     assertThat(orderStatus.getInstrument()).isEqualTo(TEST_CURRENCY_PAIR);
     logger.info("Order Status for {}: {}", orderId, orderStatus);
