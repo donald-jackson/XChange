@@ -7,7 +7,7 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class CoinsphTrade {
+public class CoinsphUserTrade {
 
   private final String symbol;
   private final long id; // Trade ID
@@ -22,7 +22,7 @@ public class CoinsphTrade {
   private final boolean isMaker;
   private final boolean isBestMatch;
 
-  public CoinsphTrade(
+  public CoinsphUserTrade(
       @JsonProperty("symbol") String symbol,
       @JsonProperty("id") long id,
       @JsonProperty("orderId") long orderId,

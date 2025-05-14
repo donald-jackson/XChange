@@ -2,7 +2,7 @@ package org.knowm.xchange.coinsph;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import org.knowm.xchange.client.ExchangeSettings;
+import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.client.ResilienceRegistries;
 import org.knowm.xchange.service.BaseParamsDigest;
 import org.slf4j.Logger;
@@ -14,23 +14,23 @@ public class CoinsphTimestampFactory implements SynchronizedValueFactory<Long> {
   private static final Logger LOG = LoggerFactory.getLogger(CoinsphTimestampFactory.class);
 
   private final Coinsph coinsph;
-  private final ExchangeSettings exchangeSettings;
+  private final ExchangeSpecification exchangeSpecification;
   private final ResilienceRegistries resilienceRegistries;
 
   private Long deltaServerTime; // difference between server time and client time in milliseconds
 
   private CoinsphTimestampFactory(
-      Coinsph coinsph, ExchangeSettings exchangeSettings, ResilienceRegistries resilienceRegistries) {
+      Coinsph coinsph, ExchangeSpecification exchangeSpecification, ResilienceRegistries resilienceRegistries) {
     this.coinsph = coinsph;
-    this.exchangeSettings = exchangeSettings;
+    this.exchangeSpecification = exchangeSpecification;
     this.resilienceRegistries = resilienceRegistries;
   }
 
   public static CoinsphTimestampFactory createFactory(
-      Coinsph coinsph, ExchangeSettings exchangeSettings, ResilienceRegistries resilienceRegistries) {
+      Coinsph coinsph, ExchangeSpecification exchangeSpecification, ResilienceRegistries resilienceRegistries) {
     CoinsphTimestampFactory factory =
-        new CoinsphTimestampFactory(coinsph, exchangeSettings, resilienceRegistries);
-    if (exchangeSettings.isResilientClient()) {
+        new CoinsphTimestampFactory(coinsph, exchangeSpecification, resilienceRegistries);
+    if (resilienceRegistries != null) { // Assuming if resilienceRegistries is provided, client should be resilient
       // Only try to sync time if resilient client is enabled
       factory.resync();
     }
@@ -39,14 +39,14 @@ public class CoinsphTimestampFactory implements SynchronizedValueFactory<Long> {
 
   @Override
   public Long createValue() {
-    if (exchangeSettings.isResilientClient() && deltaServerTime != null) {
+    if (resilienceRegistries != null && deltaServerTime != null) { // Assuming if resilienceRegistries is provided, client should be resilient
       return System.currentTimeMillis() + deltaServerTime;
     }
     return System.currentTimeMillis();
   }
 
   public void resync() {
-    if (!exchangeSettings.isResilientClient()) {
+    if (resilienceRegistries == null) { // Assuming if resilienceRegistries is NOT provided, client is NOT resilient
       // Do not attempt to sync if resilience is disabled
       deltaServerTime = null; // Ensure it's reset if it was previously set
       return;

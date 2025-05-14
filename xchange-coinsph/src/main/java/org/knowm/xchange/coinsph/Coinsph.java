@@ -3,10 +3,10 @@ package org.knowm.xchange.coinsph;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-// import jakarta.ws.rs.QueryParam; // Will be needed for other endpoints
+import jakarta.ws.rs.QueryParam; // Will be needed for other endpoints
 import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
-// import java.util.List; // Will be needed for list responses
+import java.util.List; // Will be needed for list responses
 
 // TODO: Import Coins.ph specific DTOs as they are created
 import org.knowm.xchange.coinsph.dto.CoinsphException;

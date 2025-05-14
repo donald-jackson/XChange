@@ -20,10 +20,12 @@ import org.knowm.xchange.coinsph.dto.trade.CoinsphOrder;
 import org.knowm.xchange.coinsph.dto.trade.CoinsphUserTrade; // For user trades
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.account.AccountInfo;
 import org.knowm.xchange.dto.account.Balance;
-import org.knowm.xchange.dto.account.DynamicTradingFees; // For adapting trade fees
+// import org.knowm.xchange.dto.account.DynamicTradingFees; // Class not found, replaced with Map<Instrument, Fee> // For adapting trade fees
+import org.knowm.xchange.dto.account.Fee;
 import org.knowm.xchange.dto.account.Wallet;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.trade.OpenOrders; // For adapting open orders
@@ -33,11 +35,12 @@ import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.meta.CurrencyMetaData;
-import org.knowm.xchange.dto.meta.CurrencyPairMetaData;
+import org.knowm.xchange.dto.meta.InstrumentMetaData;
 import org.knowm.xchange.dto.meta.ExchangeMetaData;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.MarketOrder;
 import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.dto.trade.UserTrades;
 import org.knowm.xchange.instrument.Instrument;
 
 public final class CoinsphAdapters {
@@ -107,7 +110,7 @@ public final class CoinsphAdapters {
 
   public static ExchangeMetaData adaptExchangeMetaData(CoinsphExchangeInfo exchangeInfo) {
     List<CoinsphSymbol> symbols = exchangeInfo.getSymbols();
-    java.util.Map<CurrencyPair, CurrencyPairMetaData> currencyPairs = new java.util.HashMap<>();
+    java.util.Map<Instrument, InstrumentMetaData> currencyPairs = new java.util.HashMap<>();
     java.util.Map<Currency, CurrencyMetaData> currencies = new java.util.HashMap<>();
 
     for (CoinsphSymbol symbol : symbols) {
@@ -116,14 +119,14 @@ public final class CoinsphAdapters {
 
       // TODO: Extract fee tiers, min/max amounts, price scale, quantity scale from symbol filters
       // For now, using defaults or placeholders
-      CurrencyPairMetaData pairMetaData =
-          new CurrencyPairMetaData(
-              null, // tradingFee
-              null, // minimumAmount
-              null, // maximumAmount
-              symbol.getQuotePrecision(), // priceScale (assuming quotePrecision is price scale)
-              null // feeTiers
-              );
+      InstrumentMetaData pairMetaData =
+          new InstrumentMetaData.Builder()
+              .tradingFee(null) // tradingFee
+              .minimumAmount(null) // minimumAmount
+              .maximumAmount(null) // maximumAmount
+              .priceScale(symbol.getQuotePrecision()) // priceScale (assuming quotePrecision is price scale)
+              .feeTiers(null) // feeTiers
+              .build();
       currencyPairs.put(pair, pairMetaData);
 
       if (!currencies.containsKey(pair.getBase())) {
@@ -292,6 +295,7 @@ public final class CoinsphAdapters {
       default:
         return org.knowm.xchange.dto.Order.OrderStatus.UNKNOWN;
     }
+  } // Added missing closing brace for the method adaptOrderStatus
 public static OpenOrders adaptOpenOrders(List<CoinsphOrder> coinsphOrders) {
     List<LimitOrder> limitOrders = new ArrayList<>();
     List<Order> otherOrders = new ArrayList<>(); // For any non-limit orders if applicable
@@ -311,7 +315,7 @@ public static OpenOrders adaptOpenOrders(List<CoinsphOrder> coinsphOrders) {
     return new OpenOrders(limitOrders, otherOrders);
   }
   
-public static DynamicTradingFees adaptTradeFees(List<CoinsphTradeFee> coinsphTradeFees) {
+public static Map<Instrument, Fee> adaptTradeFees(List<CoinsphTradeFee> coinsphTradeFees) {
     Map<Instrument, org.knowm.xchange.dto.Fee> fees = new HashMap<>();
     if (coinsphTradeFees != null) {
       for (CoinsphTradeFee fee : coinsphTradeFees) {
@@ -323,7 +327,7 @@ public static DynamicTradingFees adaptTradeFees(List<CoinsphTradeFee> coinsphTra
         }
       }
     }
-    return new DynamicTradingFees(fees);
+    return fees;
   }
   public static UserTrade adaptUserTrade(CoinsphUserTrade coinsphTrade) {
     if (coinsphTrade == null) {

@@ -66,7 +66,6 @@
         <module>xchange-coinbase</module>
         <module>xchange-coinbasepro</module>
         <module>xchange-coincheck</module>
-        <module>xchange-coinsph</module>
         <module>xchange-coindeal</module>
         <module>xchange-coindirect</module>
         <module>xchange-coinegg</module>
@@ -77,6 +76,7 @@
         <module>xchange-coinmarketcap</module>
         <module>xchange-coinmate</module>
         <module>xchange-coinone</module>
+        <module>xchange-coinsph</module>
         <module>xchange-core</module>
         <module>xchange-cryptowatch</module>
         <module>xchange-deribit</module>
@@ -128,9 +128,9 @@
         <module>xchange-stream-cexio</module>
         <module>xchange-stream-coinbasepro</module>
         <module>xchange-stream-coincheck</module>
-        <module>xchange-stream-coinsph</module>
         <module>xchange-stream-coinjar</module>
         <module>xchange-stream-coinmate</module>
+        <module>xchange-stream-coinsph</module>
         <module>xchange-stream-core</module>
         <module>xchange-stream-dydx</module>
         <module>xchange-stream-gateio</module>

@@ -2,7 +2,7 @@ package org.knowm.xchange.coinsph.service;
 
 import java.io.IOException;
 // import java.math.BigDecimal; // For withdraw/deposit if implemented
-// import java.util.List; // For funding history if implemented
+import java.util.List; // For funding history if implemented
 import org.knowm.xchange.client.ResilienceRegistries;
 import org.knowm.xchange.coinsph.CoinsphExchange;
 import org.knowm.xchange.coinsph.dto.CoinsphException;
@@ -27,6 +27,8 @@ public class CoinsphAccountServiceRaw extends CoinsphBaseService {
                     apiKey, timestampFactory, signatureCreator, exchange.getRecvWindow()))
         // .withRetry(retry("account")) // Define in CoinsphResilience
         // .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER)) // Define in CoinsphResilience
+        .call();
+  } // Added missing closing brace for getCoinsphAccount method
 public List<CoinsphTradeFee> getCoinsphTradeFees(String symbol) throws IOException, CoinsphException {
     return decorateApiCall(
             () ->

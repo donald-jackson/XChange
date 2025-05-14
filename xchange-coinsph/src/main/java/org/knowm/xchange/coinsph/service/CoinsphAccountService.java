@@ -10,7 +10,7 @@ import org.knowm.xchange.coinsph.dto.CoinsphException;
 import org.knowm.xchange.coinsph.dto.account.CoinsphAccount;
 import org.knowm.xchange.coinsph.dto.account.CoinsphTradeFee; // For trade fees
 import org.knowm.xchange.currency.Currency;
-import org.knowm.xchange.dto.account.DynamicTradingFees; // For adapting trade fees
+// import org.knowm.xchange.dto.account.DynamicTradingFees; // Class not found, using Map<Instrument, Fee>
 import org.knowm.xchange.dto.account.AccountInfo;
 import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.service.account.AccountService;
@@ -72,7 +72,8 @@ public class CoinsphAccountService extends CoinsphAccountServiceRaw implements A
    * @throws IOException
    * @throws CoinsphException
    */
-  public DynamicTradingFees getDynamicTradingFees() throws IOException, CoinsphException {
+  @Override
+  public java.util.Map<org.knowm.xchange.instrument.Instrument, org.knowm.xchange.dto.account.Fee> getTradingFees() throws IOException, CoinsphException {
     List<CoinsphTradeFee> fees = super.getCoinsphTradeFees();
     return CoinsphAdapters.adaptTradeFees(fees);
   }
