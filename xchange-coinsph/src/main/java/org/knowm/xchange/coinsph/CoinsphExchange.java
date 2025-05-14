@@ -29,7 +29,7 @@ import org.knowm.xchange.client.ExchangeRestProxyBuilder;
 import org.knowm.xchange.coinsph.service.CoinsphDigest;
 
 
-public class CoinsphExchange extends BaseExchange<Coinsph, CoinsphAuthenticated, ExchangeSpecification> implements Exchange {
+public class CoinsphExchange extends BaseExchange implements Exchange {
   private static final Logger LOG = LoggerFactory.getLogger(CoinsphExchange.class);
 
   // Coins.ph specific URLs
@@ -39,6 +39,10 @@ public static final String PARAM_RECV_WINDOW = "recvWindow";
 
   protected static ResilienceRegistries RESILIENCE_REGISTRIES;
   protected SynchronizedValueFactory<Long> timestampFactory;
+protected Coinsph publicApi;
+  protected CoinsphAuthenticated authenticatedApi;
+  protected ParamsDigest signatureCreator; // CoinsphDigest should implement/extend ParamsDigest
+
 
   @Override
   protected void initServices() {
@@ -59,6 +63,17 @@ public static final String PARAM_RECV_WINDOW = "recvWindow";
     // Coins.ph uses a timestamp for signed requests, similar to Binance.
     // The timestampFactory provides this synchronized time.
     return timestampFactory;
+  }
+public Coinsph getPublicApi() {
+    return publicApi;
+  }
+
+  public CoinsphAuthenticated getAuthenticatedApi() {
+    return authenticatedApi;
+  }
+
+  public ParamsDigest getSignatureCreator() {
+    return signatureCreator;
   }
 
   public static void resetResilienceRegistries() {
@@ -134,7 +149,7 @@ public static final String PARAM_RECV_WINDOW = "recvWindow";
       LOG.debug("Starting remoteInit for Coins.ph");
       // Fetch exchange info
       CoinsphMarketDataServiceRaw marketDataServiceRaw = (CoinsphMarketDataServiceRaw) this.marketDataService;
-      CoinsphExchangeInfo exchangeInfo = marketDataServiceRaw.getPublicApi().exchangeInfo(); // Direct call to public API
+      CoinsphExchangeInfo exchangeInfo = this.publicApi.exchangeInfo(); // Use direct publicApi field
       LOG.debug("Fetched CoinsphExchangeInfo: {}", exchangeInfo);
 
       // Adapt to XChange DTOs
