@@ -25,12 +25,15 @@ import org.slf4j.LoggerFactory;
 import org.knowm.xchange.coinsph.CoinsphTimestampFactory;
 import org.knowm.xchange.coinsph.CoinsphResilience;
 import org.knowm.xchange.coinsph.CoinsphAdapters;
+import org.knowm.xchange.client.ExchangeRestProxyBuilder;
+import org.knowm.xchange.coinsph.service.CoinsphDigest;
 
 
-public class CoinsphExchange extends BaseExchange implements Exchange {
+public class CoinsphExchange extends BaseExchange<Coinsph, CoinsphAuthenticated, ExchangeSpecification> implements Exchange {
   private static final Logger LOG = LoggerFactory.getLogger(CoinsphExchange.class);
 
   // Coins.ph specific URLs
+public static final String PARAM_RECV_WINDOW = "recvWindow";
   private static final String PRODUCTION_URL = "https://api.coins.ph"; // Placeholder, verify actual URL
   public static final String SANDBOX_URL = "https://9001.pl-qa.coinsxyz.me";
 
@@ -87,11 +90,42 @@ public class CoinsphExchange extends BaseExchange implements Exchange {
   public void applySpecification(ExchangeSpecification exchangeSpecification) {
     concludeHostParams(exchangeSpecification); // Set correct URL based on sandbox mode
     super.applySpecification(exchangeSpecification);
+
+    // Initialize API proxies using the exchangeSpecification from superclass
+    this.publicApi = ExchangeRestProxyBuilder.forInterface(Coinsph.class, this.exchangeSpecification).build();
+    this.authenticatedApi = ExchangeRestProxyBuilder.forInterface(CoinsphAuthenticated.class, this.exchangeSpecification).build();
+    
+    // Initialize signature creator
+    if (this.exchangeSpecification.getSecretKey() != null) {
+        this.signatureCreator = CoinsphDigest.createInstance(this.exchangeSpecification.getSecretKey());
+    } else {
+        // Log or handle the case where secret key is not provided for authenticated services
+        LOG.warn("Secret key not provided. Authenticated services will not be available.");
+    }
   }
 
   public boolean usingSandbox() {
     return Boolean.TRUE.equals(
-        exchangeSpecification.getExchangeSpecificParametersItem(USE_SANDBOX));
+        exchangeSpecification.getExchangeSpecificParametersItem(Exchange.USE_SANDBOX));
+  }
+
+  public Long getRecvWindow() {
+    // Coins.ph docs: "recvWindow (optional)"
+    // "If recvWindow is not sent with the request, it will default to 5000." - from Binance docs, assuming Coins.ph is similar.
+    // So, if null, the server will use its default. We can return null here.
+    Object recvWindowObj = exchangeSpecification.getExchangeSpecificParametersItem(PARAM_RECV_WINDOW);
+    if (recvWindowObj == null) {
+      return null; 
+    }
+    if (recvWindowObj instanceof Number) {
+      return ((Number) recvWindowObj).longValue();
+    }
+    try {
+      return Long.parseLong(recvWindowObj.toString());
+    } catch (NumberFormatException e) {
+      LOG.warn("Invalid format for {} parameter: {}. Using null.", PARAM_RECV_WINDOW, recvWindowObj, e);
+      return null;
+    }
   }
 
   @Override

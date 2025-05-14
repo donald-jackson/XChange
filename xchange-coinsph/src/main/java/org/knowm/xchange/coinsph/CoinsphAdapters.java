@@ -21,6 +21,7 @@ import org.knowm.xchange.coinsph.dto.trade.CoinsphUserTrade; // For user trades
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
+import org.knowm.xchange.dto.Order.OrderFlags;
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.account.AccountInfo;
 import org.knowm.xchange.dto.account.Balance;
@@ -46,7 +47,7 @@ import org.knowm.xchange.instrument.Instrument;
 public final class CoinsphAdapters {
 
   // Enum for Coins.ph specific order flags, if any (e.g. for quoteOrderQty)
-  public enum CoinsphOrderFlags {
+  public enum CoinsphOrderFlags implements Order.IOrderFlags {
     QUOTE_ORDER_QTY // Used for market orders to specify the amount of quote asset to spend
   }
 
@@ -100,7 +101,7 @@ public final class CoinsphAdapters {
         balances.add(
             new Balance(
                 new Currency(coinsphBalance.getAsset()),
-                coinsphBalance.getTotal(), // total = free + locked
+                coinsphBalance.getFree().add(coinsphBalance.getLocked()), // total = free + locked
                 coinsphBalance.getFree(),
                 coinsphBalance.getLocked()));
       }
@@ -124,7 +125,7 @@ public final class CoinsphAdapters {
               .tradingFee(null) // tradingFee
               .minimumAmount(null) // minimumAmount
               .maximumAmount(null) // maximumAmount
-              .priceScale(symbol.getQuotePrecision()) // priceScale (assuming quotePrecision is price scale)
+              .priceScale(symbol.getQuoteAssetPrecision()) // priceScale (assuming quoteAssetPrecision is price scale)
               .feeTiers(null) // feeTiers
               .build();
       currencyPairs.put(pair, pairMetaData);
@@ -231,10 +232,10 @@ public final class CoinsphAdapters {
   
   public static String toTimeInForce(Order.IOrderFlags flag) {
       if (flag == null) return "GTC"; // Default for Coins.ph if not specified
-      if (flag == org.knowm.xchange.dto.Order.OrderFlags.IMMEDIATE_OR_CANCEL) {
+      if (flag == OrderFlags.IMMEDIATE_OR_CANCEL) {
         return "IOC";
       }
-      if (flag == org.knowm.xchange.dto.Order.OrderFlags.FILL_OR_KILL) {
+      if (flag == OrderFlags.FILL_OR_KILL) {
         return "FOK";
       }
       // Other flags are not directly mapped to Coins.ph timeInForce values.
@@ -261,14 +262,28 @@ public final class CoinsphAdapters {
     CurrencyPair pair = toCurrencyPair(coinsphOrder.getSymbol());
     Date timestamp = new Date(coinsphOrder.getTime()); // Or updateTime if more appropriate
 
+    BigDecimal executedQty = coinsphOrder.getExecutedQty();
+    BigDecimal cummulativeQuoteQty = coinsphOrder.getCummulativeQuoteQty();
+    BigDecimal averagePrice = null;
+    if (executedQty != null && executedQty.compareTo(BigDecimal.ZERO) > 0 && cummulativeQuoteQty != null) {
+      try {
+        // Ensure quote currency precision is appropriate here if known, otherwise using a default like 8
+        averagePrice = cummulativeQuoteQty.divide(executedQty, 8, java.math.RoundingMode.HALF_UP);
+      } catch (ArithmeticException e) {
+        // This might happen if executedQty is extremely small, leading to precision issues
+        // Or if cummulativeQuoteQty is 0 and executedQty is also 0 (already handled by compareTo)
+        // Log error or handle as appropriate; for now, averagePrice remains null
+      }
+    }
+
     LimitOrder.Builder builder = new LimitOrder.Builder(type, pair)
         .id(String.valueOf(coinsphOrder.getOrderId()))
         .originalAmount(coinsphOrder.getOrigQty())
-        .cumulativeAmount(coinsphOrder.getExecutedQty())
+        .cumulativeAmount(executedQty) // Use the variable already fetched
         .timestamp(timestamp)
         .orderStatus(adaptOrderStatus(coinsphOrder.getStatus()))
         .limitPrice(coinsphOrder.getPrice()) // Price is present for limit orders
-        .averagePrice(coinsphOrder.getAvgPrice()) // If available, else calculate from fills
+        .averagePrice(averagePrice)
         .userReference(coinsphOrder.getClientOrderId());
         // TODO: Add fees if available in CoinsphOrder DTO
 
@@ -316,14 +331,14 @@ public static OpenOrders adaptOpenOrders(List<CoinsphOrder> coinsphOrders) {
   }
   
 public static Map<Instrument, Fee> adaptTradeFees(List<CoinsphTradeFee> coinsphTradeFees) {
-    Map<Instrument, org.knowm.xchange.dto.Fee> fees = new HashMap<>();
+    Map<Instrument, org.knowm.xchange.dto.account.Fee> fees = new HashMap<>();
     if (coinsphTradeFees != null) {
       for (CoinsphTradeFee fee : coinsphTradeFees) {
         Instrument instrument = toCurrencyPair(fee.getSymbol());
         if (instrument != null) {
           // Assuming maker and taker are distinct fees.
           // XChange Fee DTO takes one maker and one taker fee.
-          fees.put(instrument, new org.knowm.xchange.dto.Fee(fee.getMakerCommission(), fee.getTakerCommission()));
+          fees.put(instrument, new org.knowm.xchange.dto.account.Fee(fee.getMakerCommission(), fee.getTakerCommission()));
         }
       }
     }
