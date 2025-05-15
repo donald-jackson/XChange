@@ -27,7 +27,7 @@ import org.knowm.xchange.coinsph.CoinsphTimestampFactory;
 import org.knowm.xchange.coinsph.CoinsphResilience;
 import org.knowm.xchange.coinsph.CoinsphAdapters;
 import org.knowm.xchange.client.ExchangeRestProxyBuilder;
-import org.knowm.xchange.coinsph.service.CoinsphDigest;
+import org.knowm.xchange.coinsph.service.CoinsPHSignatureCreator;
 
 
 public class CoinsphExchange extends BaseExchange implements Exchange {
@@ -114,7 +114,7 @@ public Coinsph getPublicApi() {
     // Initialize signature creator
     // Use the passed exchangeSpecification as this.exchangeSpecification might not be set yet by super
     if (exchangeSpecification.getSecretKey() != null) {
-        this.signatureCreator = CoinsphDigest.createInstance(exchangeSpecification.getSecretKey());
+        this.signatureCreator = CoinsPHSignatureCreator.createInstance(exchangeSpecification.getSecretKey());
     } else {
         LOG.warn("Secret key not provided. Authenticated services will not be available.");
     }

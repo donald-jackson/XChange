@@ -50,17 +50,19 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
     org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(marketOrder.getType());
     org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.MARKET; // Explicitly MARKET
 
-    BigDecimal quantity = null;
-    BigDecimal quoteOrderQty = null;
+    final BigDecimal finalQuantity;
+    final BigDecimal finalQuoteOrderQty;
 
     if (marketOrder.hasFlag(CoinsphAdapters.CoinsphOrderFlags.QUOTE_ORDER_QTY)) {
-      quoteOrderQty = marketOrder.getOriginalAmount();
+      finalQuoteOrderQty = marketOrder.getOriginalAmount();
+      finalQuantity = null;
     } else {
-      quantity = marketOrder.getOriginalAmount();
+      finalQuantity = marketOrder.getOriginalAmount();
+      finalQuoteOrderQty = null;
     }
     
-    String newClientOrderId = marketOrder.getUserReference();
-    Long recvWindow = exchange.getRecvWindow();
+    final String finalNewClientOrderId = marketOrder.getUserReference();
+    final Long finalRecvWindow = exchange.getRecvWindow();
     // timeInForce, price, stopPrice are null for basic MARKET orders
 
     return decorateApiCall(
@@ -71,12 +73,12 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
                     side,
                     type,
                     null, // timeInForce
-                    quantity,
-                    quoteOrderQty,
+                    finalQuantity,
+                    finalQuoteOrderQty,
                     null, // price
-                    newClientOrderId,
+                    finalNewClientOrderId,
                     null, // stopPrice
-                    recvWindow,
+                    finalRecvWindow,
                     timestampFactory,
                     signatureCreator))
         // .withRetry(retry("newOrder"))
@@ -90,18 +92,19 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
     org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(limitOrder.getType());
     org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.LIMIT; // Explicitly LIMIT
 
-    org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce timeInForce = org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce.GTC; // Default
+    org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce initialTimeInForce = org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce.GTC; // Default
     for (Order.IOrderFlags flag : limitOrder.getOrderFlags()) {
       if (flag instanceof org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) {
-        timeInForce = (org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag;
+        initialTimeInForce = (org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag;
         break;
       }
     }
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce finalTimeInForce = initialTimeInForce;
     
-    BigDecimal quantity = limitOrder.getOriginalAmount();
-    BigDecimal price = limitOrder.getLimitPrice();
-    String newClientOrderId = limitOrder.getUserReference();
-    Long recvWindow = exchange.getRecvWindow();
+    final BigDecimal finalQuantity = limitOrder.getOriginalAmount();
+    final BigDecimal finalPrice = limitOrder.getLimitPrice();
+    final String finalNewClientOrderId = limitOrder.getUserReference();
+    final Long finalRecvWindow = exchange.getRecvWindow();
     // quoteOrderQty and stopPrice are null for basic LIMIT orders
 
     return decorateApiCall(
@@ -111,13 +114,13 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
                     symbol,
                     side,
                     type,
-                    timeInForce,
-                    quantity,
+                    finalTimeInForce,
+                    finalQuantity,
                     null, // quoteOrderQty
-                    price,
-                    newClientOrderId,
+                    finalPrice,
+                    finalNewClientOrderId,
                     null, // stopPrice
-                    recvWindow,
+                    finalRecvWindow,
                     timestampFactory,
                     signatureCreator))
         // .withRetry(retry("newOrder"))
@@ -130,39 +133,44 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
     String symbol = CoinsphAdapters.toSymbol(stopOrder.getCurrencyPair());
     org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(stopOrder.getType());
     
-    org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type;
-    BigDecimal price = null; // Limit price for _LIMIT variants
-    org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce timeInForce = null;
+    // Determine final values for lambda
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType finalType;
+    final BigDecimal finalPrice;
+    org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce initialTimeInForce = null;
 
     // Infer type: STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT
     // Defaulting to STOP_LOSS variants. User can use flags for TAKE_PROFIT.
     // TODO: Add flag handling for TAKE_PROFIT vs STOP_LOSS selection.
     if (stopOrder.getLimitPrice() != null) {
-        type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.STOP_LOSS_LIMIT;
-        price = stopOrder.getLimitPrice();
-        timeInForce = org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce.GTC; // Default for limit part
+        finalType = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.STOP_LOSS_LIMIT;
+        finalPrice = stopOrder.getLimitPrice();
+        initialTimeInForce = org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce.GTC; // Default for limit part
         for (Order.IOrderFlags flag : stopOrder.getOrderFlags()) {
           if (flag instanceof org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) {
-            timeInForce = (org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag;
+            initialTimeInForce = (org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag;
             break;
           }
         }
     } else {
-        type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.STOP_LOSS;
-        // timeInForce is generally null for market-triggering stop orders
+        finalType = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.STOP_LOSS;
+        finalPrice = null;
+        // initialTimeInForce remains null for market-triggering stop orders
     }
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce finalTimeInForce = initialTimeInForce;
 
-    BigDecimal quantity = null;
-    BigDecimal quoteOrderQty = null;
+    final BigDecimal finalQuantity;
+    final BigDecimal finalQuoteOrderQty;
     if (stopOrder.hasFlag(CoinsphAdapters.CoinsphOrderFlags.QUOTE_ORDER_QTY) && stopOrder.getLimitPrice() == null) {
-      quoteOrderQty = stopOrder.getOriginalAmount();
+      finalQuoteOrderQty = stopOrder.getOriginalAmount();
+      finalQuantity = null;
     } else {
-      quantity = stopOrder.getOriginalAmount();
+      finalQuantity = stopOrder.getOriginalAmount();
+      finalQuoteOrderQty = null;
     }
 
-    BigDecimal stopPriceValue = stopOrder.getStopPrice();
-    String newClientOrderId = stopOrder.getUserReference();
-    Long recvWindow = exchange.getRecvWindow();
+    final BigDecimal finalStopPriceValue = stopOrder.getStopPrice();
+    final String finalNewClientOrderId = stopOrder.getUserReference();
+    final Long finalRecvWindow = exchange.getRecvWindow();
 
     return decorateApiCall(
             () ->
@@ -170,14 +178,14 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
                     apiKey,
                     symbol,
                     side,
-                    type,
-                    timeInForce,
-                    quantity,
-                    quoteOrderQty,
-                    price, // This is the limit price for _LIMIT variants
-                    newClientOrderId,
-                    stopPriceValue, // This is the stopPrice
-                    recvWindow,
+                    finalType,
+                    finalTimeInForce,
+                    finalQuantity,
+                    finalQuoteOrderQty,
+                    finalPrice, // This is the limit price for _LIMIT variants
+                    finalNewClientOrderId,
+                    finalStopPriceValue, // This is the stopPrice
+                    finalRecvWindow,
                     timestampFactory,
                     signatureCreator))
         // .withRetry(retry("newOrder"))
