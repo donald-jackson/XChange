@@ -28,11 +28,21 @@ import org.knowm.xchange.service.trade.params.orders.DefaultQueryOrderParamInstr
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 //@Disabled("Integration tests are disabled by default. Enable for manual execution against sandbox.")
 public class CoinsphExchangeIntegration {
 
   private static final Logger logger = LoggerFactory.getLogger(CoinsphExchangeIntegration.class);
+  private static final String JSON_OUTPUT_DIR = "src/test/resources/org/knowm/xchange/coinsph/dto/";
+  private final ObjectMapper objectMapper = new ObjectMapper();
+
   private Exchange exchange;
   private MarketDataService marketDataService;
   private AccountService accountService;
@@ -72,8 +82,11 @@ public class CoinsphExchangeIntegration {
     logger.info("Exchange: {}, SSL URI: {}", exchange.getExchangeSpecification().getExchangeName(), exchange.getExchangeSpecification().getSslUri());
     try {
         logger.info("Loading remote metadata...");
-        exchange.remoteInit(); 
+        exchange.remoteInit();
         logger.info("Remote metadata loaded successfully.");
+        if (exchange.getExchangeMetaData() != null) {
+          saveJson(exchange.getExchangeMetaData(), "exchangeMetaData");
+        }
         // Log currency pair metadata if available
         if (exchange.getExchangeMetaData() != null && exchange.getExchangeMetaData().getInstruments() != null) {
             org.knowm.xchange.dto.meta.InstrumentMetaData instrumentMetaData = exchange.getExchangeMetaData().getInstruments().get(TEST_CURRENCY_PAIR);
@@ -99,6 +112,7 @@ public class CoinsphExchangeIntegration {
     org.knowm.xchange.dto.account.Wallet wallet = accountInfo.getWallet();
     assertThat(wallet).isNotNull();
     logger.info("Account Info: {}", accountInfo);
+    saveJson(accountInfo, "accountInfo");
     
     Balance phpBalance = wallet.getBalance(Currency.PHP);
     assertThat(phpBalance).isNotNull();
@@ -112,12 +126,14 @@ public class CoinsphExchangeIntegration {
     assertThat(ticker).isNotNull();
     assertThat(ticker.getInstrument()).isEqualTo(TEST_CURRENCY_PAIR);
     logger.info("Ticker {}: {}", TEST_CURRENCY_PAIR, ticker);
+    saveJson(ticker, "ticker_BTCPHP");
   }
 
   @Test
   void getOrderBook_shouldReturnOrderBookForBTCPHP() throws IOException {
     OrderBook orderBook = marketDataService.getOrderBook(TEST_CURRENCY_PAIR);
     assertThat(orderBook).isNotNull();
+    saveJson(orderBook, "orderBook_BTCPHP");
     // Sandbox might be illiquid, so don't assert isNotEmpty for asks/bids
     logger.info("Order Book {}: Asks depth: {}, Bids depth: {}", 
         TEST_CURRENCY_PAIR, 
@@ -147,6 +163,7 @@ public class CoinsphExchangeIntegration {
     }
 
     assertThat(orderId).isNotNull().isNotEmpty();
+    saveJson(new SimpleOrderId(orderId), "placedMarketOrder_ID_BTCPHP");
     logger.info("Placed Market Order ID: {}", orderId);
 
     try {
@@ -162,5 +179,47 @@ public class CoinsphExchangeIntegration {
     assertThat(orderStatus.getId()).isEqualTo(orderId);
     assertThat(orderStatus.getInstrument()).isEqualTo(TEST_CURRENCY_PAIR);
     logger.info("Order Status for {}: {}", orderId, orderStatus);
+    saveJson(orderStatus, "orderStatus_BTCPHP_" + orderId);
+  }
+
+  private void saveJson(Object dto, String fileName) {
+    if (dto == null) {
+      logger.error("DTO object is null, cannot save JSON for fileName: {}", fileName);
+      return;
+    }
+    // It's good practice to log the object's string representation, but be wary of large objects.
+    // For now, let's log a simpler message or trust the debugger/later inspection.
+    // logger.debug("Attempting to save DTO: {} for fileName: {}", dto.toString(), fileName); 
+
+    try {
+      // Ensure the directory exists
+      Files.createDirectories(Paths.get(JSON_OUTPUT_DIR));
+      // Configure pretty print
+      objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+      String filePath = JSON_OUTPUT_DIR + fileName + ".json";
+      objectMapper.writeValue(new File(filePath), dto);
+      logger.info("Saved JSON to {}", filePath);
+    } catch (IOException e) {
+      // Robustly get class name, even if dto somehow became null (though guarded above)
+      String className = (dto != null) ? dto.getClass().getSimpleName() : "null_dto_in_catch"; 
+      logger.error(
+          "Failed to save JSON for {} to {}. Exception: {}",
+          className,
+          fileName,
+          e.getMessage(),
+          e);
+    }
+  }
+
+  // Helper class for saving just an order ID as JSON
+  private static class SimpleOrderId {
+    public String orderId;
+    public SimpleOrderId(String orderId) {
+      this.orderId = orderId;
+    }
+    // Getter for Jackson
+    public String getOrderId() {
+        return orderId;
+    }
   }
 }
