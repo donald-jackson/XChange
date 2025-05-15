@@ -26,60 +26,70 @@ public class CoinsphStreamingService extends JsonNettyStreamingService {
   private final CoinsphAccountServiceRaw accountServiceRaw;
   private volatile String listenKey = null;
   private volatile long listenKeyCreateTime = 0;
-  private final AtomicBoolean isUserDataStreamSubscribed = new AtomicBoolean(false);
+  // private final AtomicBoolean isUserDataStreamSubscribed = new AtomicBoolean(false); // May not be needed if class is dedicated
   private ScheduledExecutorService listenKeyKeepAliveExecutor;
-  private final boolean isPrivateService; // Added: flag for user data stream service
 
+  private final CoinsphStreamingExchange exchange; // Reference to the exchange for API keys, URIs etc.
 
-  // Constructor for public streams
-  public CoinsphStreamingService(String apiUrl, CoinsphAccountServiceRaw accountServiceRaw) {
-    this(apiUrl, accountServiceRaw, false);
-  }
-
-  // Constructor for private (user data) streams
-  public CoinsphStreamingService(String apiUrl, CoinsphAccountServiceRaw accountServiceRaw, boolean isPrivateService) {
-    super(apiUrl, Integer.MAX_VALUE);
-    this.accountServiceRaw = accountServiceRaw;
-    this.isPrivateService = isPrivateService;
-    setPingPongInterval(DEFAULT_PING_INTERVAL_SECONDS);
-  }
-
-@Override
-  public String getApiUrl() {
-    if (isPrivateService) {
-      if (listenKey == null) {
-        // Attempt to start user data stream to get listenKey if not already available.
-        // This might be called before connect() if subscribe is called first,
-        // or during connect() itself.
-        LOG.info("ListenKey is null for private service, attempting to fetch/refresh...");
-        startUserDataStream(); // This will try to obtain a listenKey
-      }
-      if (listenKey != null) {
-        return super.getApiUrl() + "/openapi/ws/" + listenKey;
-      } else {
-        LOG.error("Cannot construct private API URL: listenKey is null even after attempting to fetch.");
-        // Fallback or throw? JsonNettyStreamingService expects a URL.
-        // Throwing an exception might be better to signal a critical failure.
-        throw new IllegalStateException("ListenKey is required for private service URL but could not be obtained.");
-      }
+  /**
+   * Constructor for User Data Streaming Service.
+   * Obtains a listenKey and constructs the full WebSocket URI before initializing the superclass.
+   * @param exchange The CoinsphStreamingExchange instance.
+   * @param config The streaming configuration.
+   * @throws IOException if listenKey cannot be obtained.
+   */
+  public CoinsphStreamingService(CoinsphStreamingExchange exchange, org.knowm.xchange.service.streaming.StreamingExchangeConfiguration config) throws IOException {
+    super(null, // API URL will be set dynamically after listenKey is obtained
+          Integer.MAX_VALUE, 
+          config.getConnectionTimeout(), 
+          config.getRetryDuration(), 
+          config.getIdleTimeout());
+    this.exchange = exchange;
+    this.accountServiceRaw = (CoinsphAccountServiceRaw) exchange.getAccountService(); // Get REST account service
+    
+    // Obtain listenKey and set the actual API URI
+    try {
+        LOG.info("CoinsphStreamingService (User Data) initializing, fetching listenKey...");
+        startUserDataStream(); // This populates this.listenKey
+        if (this.listenKey == null) {
+            throw new IOException("Failed to obtain listenKey for User Data Stream.");
+        }
+        String actualApiUrl = exchange.getUserStreamingBaseUri() + this.listenKey;
+        LOG.info("User Data Stream URL configured: {}", actualApiUrl);
+        this.uri = java.net.URI.create(actualApiUrl); // Set the URI in the superclass
+    } catch (IOException e) {
+        LOG.error("Failed to initialize CoinsphStreamingService for User Data: {}", e.getMessage());
+        throw e; // Re-throw to signal construction failure
     }
-    return super.getApiUrl();
+    
+    setPingPongInterval(DEFAULT_PING_INTERVAL_SECONDS); // This is from JsonNettyStreamingService
+    // TODO: If using config.getPingPongInterval(), use that instead if provided.
+  }
+
+  // getApiUrl() is called by super.connect() if uri is null, but we set uri directly.
+  // It's good practice to ensure it returns the correct one if called elsewhere.
+  @Override
+  public String getApiUrl() {
+    if (this.uri != null) {
+        return this.uri.toString();
+    }
+    // Fallback, though 'uri' should be set in constructor for user data stream
+    LOG.warn("getApiUrl() called but URI was not set, this may indicate an issue.");
+    return exchange.getUserStreamingBaseUri() + (listenKey != null ? listenKey : "");
   }
 
   @Override
   public Completable connect() {
-    if (isPrivateService && listenKey == null) {
-      // Ensure listenKey is fetched before attempting to connect for private streams.
-      // startUserDataStream() will obtain the listenKey.
-      // The actual URL construction with listenKey is handled by getApiUrl().
-      LOG.info("Private service connecting, ensuring listenKey is available.");
-      startUserDataStream(); 
-      if (listenKey == null) {
-        return Completable.error(new IllegalStateException("Failed to obtain listenKey for private service connection."));
-      }
+    // ListenKey should be obtained and URI set in constructor.
+    // If listenKey is null here, constructor failed or was bypassed.
+    if (listenKey == null) {
+        LOG.error("Attempting to connect User Data Stream but listenKey is null.");
+        return Completable.error(new IllegalStateException("ListenKey not available for User Data Stream connection."));
     }
+    LOG.info("Connecting User Data Stream with listenKey: {}", listenKey);
     return super.connect();
   }
+  
   @Override
   protected String getChannelNameFromMessage(JsonNode message) throws IOException {
     // Coins.ph streams are typically <symbol>@<streamName> or just <streamName> for user data
@@ -171,14 +181,7 @@ public class CoinsphStreamingService extends JsonNettyStreamingService {
         LOG.error("Error parsing channel from message: " + message.toString(), e);
         // Or handle error appropriately, maybe disconnect
     }
-private boolean isUserDataChannel(String channelName) {
-    // Define what channel names correspond to user data streams
-    // e.g., "executionReport", "balanceUpdate", or the listenKey itself if used as channel
-    return "executionReport".equals(channelName) || 
-           "outboundAccountPosition".equals(channelName) || 
-           "balanceUpdate".equals(channelName); // "balanceUpdate" is another event type from docs
-    // Add other user-specific channels if any
-  }
+  // Removed unused isUserDataChannel method
 
   private synchronized void startUserDataStream() {
     if (accountServiceRaw == null) {
@@ -272,25 +275,22 @@ private boolean isUserDataChannel(String channelName) {
 
   @Override
   public Observable<JsonNode> subscribeChannel(String channelName, Object... args) {
-    if (isPrivateService) {
-      // For private service (user data streams):
-      // 1. Ensure listenKey is active (connect() and getApiUrl() handle this primarily).
-      //    startUserDataStream() is called during connect/getApiUrl if listenKey is needed.
-      // 2. User data streams are typically implicit with the listenKey connection.
-      //    No explicit SUBSCRIBE message is sent for channels like "executionReport".
-      //    The messages will arrive on the WebSocket connection if the event occurs.
-      //    We just need to return an Observable that filters messages from the stream.
-      if (!isSocketOpen() && !isConnecting()) {
-        LOG.info("Private service socket not open, attempting to connect before subscribing to {}.", channelName);
-        connect().blockingAwait(); // Ensure connection is attempted before proceeding
-      }
-      LOG.info("Subscribing to private channel {} (no explicit server-side subscription message sent).", channelName);
-      return super.subscribeChannel(channelName, args); // Relies on getChannelNameFromMessage to route
-    } else {
-      // For public service: send standard SUBSCRIBE message
-      LOG.info("Subscribing to public channel {}.", channelName);
-      return super.subscribeChannel(channelName, args);
+    // This service is now dedicated to User Data Streams.
+    // 1. ListenKey is obtained and URI is set in the constructor.
+    // 2. Connection to the listenKey-based URL implies subscription to all user events.
+    //    No explicit "SUBSCRIBE" message is sent to the server for channels like "executionReport".
+    //    Incoming messages are routed by getChannelNameFromMessage (e.g., based on event type "e").
+
+    if (!isSocketOpen() && !isConnecting()) {
+      LOG.info("User Data Stream socket not open, attempting to connect before subscribing to internal channel {}.", channelName);
+      // connect() will use the listenKey-specific URI.
+      // Using blockingAwait() here can be problematic if called from a sensitive thread.
+      // Consider if this automatic connect initiation is desired or if clients should explicitly connect first.
+      // For now, retaining original logic structure.
+      connect().blockingAwait(); 
     }
+    LOG.info("Subscribing to User Data Stream internal channel {} (no explicit server-side subscription message sent).", channelName);
+    return super.subscribeChannel(channelName, args); // Relies on getChannelNameFromMessage to route
   }
 
   @Override

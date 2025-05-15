@@ -7,19 +7,22 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class CoinsphWebSocketBalanceUpdate extends CoinsphWebSocketEvent {
+public class CoinsphWebSocketBalanceUpdate { // Removed "extends CoinsphWebSocketEvent"
 
-  private final String asset;
-  private final BigDecimal balanceDelta;
-  private final long transactionTime;
+  private final String eventType; // e - Added
+  private final long eventTime;   // E - Added
+  private final String asset;     // a
+  private final BigDecimal balanceDelta; // d
+  private final long transactionTime;    // T (Coins.ph calls this "Clear Time" for balanceUpdate)
 
   public CoinsphWebSocketBalanceUpdate(
-      @JsonProperty("e") String eventType,
-      @JsonProperty("E") long eventTime,
+      @JsonProperty("e") String eventType,    // Added
+      @JsonProperty("E") long eventTime,      // Added
       @JsonProperty("a") String asset,
       @JsonProperty("d") BigDecimal balanceDelta,
       @JsonProperty("T") long transactionTime) {
-    super(eventType, eventTime);
+    this.eventType = eventType; // Added
+    this.eventTime = eventTime;   // Added
     this.asset = asset;
     this.balanceDelta = balanceDelta;
     this.transactionTime = transactionTime;

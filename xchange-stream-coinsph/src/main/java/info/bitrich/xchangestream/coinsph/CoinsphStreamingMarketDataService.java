@@ -14,13 +14,14 @@ import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.exceptions.NotYetImplementedForExchangeException;
 import info.bitrich.xchangestream.coinsph.CoinsphStreamingAdapters; // Added
+import info.bitrich.xchangestream.service.netty.JsonNettyStreamingService; // Added for public service
 
 public class CoinsphStreamingMarketDataService implements StreamingMarketDataService {
 
-  private final CoinsphStreamingService service;
+  private final JsonNettyStreamingService service; // Changed to use the public streaming service
   private final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
 
-  public CoinsphStreamingMarketDataService(CoinsphStreamingService service) {
+  public CoinsphStreamingMarketDataService(JsonNettyStreamingService service) { // Changed parameter type
     this.service = service;
   }
 
