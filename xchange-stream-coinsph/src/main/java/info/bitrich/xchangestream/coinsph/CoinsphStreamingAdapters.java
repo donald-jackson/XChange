@@ -5,6 +5,7 @@ import info.bitrich.xchangestream.coinsph.dto.CoinsphWebSocketDepth;
 import info.bitrich.xchangestream.coinsph.dto.CoinsphWebSocketExecutionReport;
 import info.bitrich.xchangestream.coinsph.dto.CoinsphWebSocketTicker; // Added for ticker adapter
 import info.bitrich.xchangestream.coinsph.dto.CoinsphWebSocketBookTicker; // Added for book ticker adapter
+import info.bitrich.xchangestream.coinsph.dto.CoinsphWebSocketOutboundAccountPosition;
 import org.knowm.xchange.coinsph.dto.marketdata.CoinsphTicker; // Added for ticker adapter
 import org.knowm.xchange.dto.marketdata.Ticker; // Added for book ticker adapter
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.knowm.xchange.coinsph.CoinsphAdapters; // For base currency pair conversion
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.account.Balance;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Trade;

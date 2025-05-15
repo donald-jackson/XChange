@@ -6,8 +6,8 @@ import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import info.bitrich.xchangestream.core.StreamingTradeService;
 import info.bitrich.xchangestream.core.StreamingAccountService;
 import info.bitrich.xchangestream.service.netty.NettyStreamingService; // Base class for streaming service
-import io.reactivex.Completable;
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Observable;
 import info.bitrich.xchangestream.coinsph.CoinsphStreamingAccountService;
 import info.bitrich.xchangestream.coinsph.CoinsphStreamingMarketDataService;
 import info.bitrich.xchangestream.coinsph.CoinsphStreamingService;

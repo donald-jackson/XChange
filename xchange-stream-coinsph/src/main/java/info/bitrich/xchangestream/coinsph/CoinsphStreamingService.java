@@ -15,6 +15,9 @@ import java.util.concurrent.Executors; // Added
 import java.util.concurrent.ScheduledExecutorService; // Added
 import java.util.concurrent.TimeUnit; // Added
 import java.util.concurrent.atomic.AtomicBoolean; // Added
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Observable;
+import info.bitrich.xchangestream.service.core.StreamingExchangeConfiguration;
 
 public class CoinsphStreamingService extends JsonNettyStreamingService {
   private static final Logger LOG = LoggerFactory.getLogger(CoinsphStreamingService.class);
@@ -38,7 +41,7 @@ public class CoinsphStreamingService extends JsonNettyStreamingService {
    * @param config The streaming configuration.
    * @throws IOException if listenKey cannot be obtained.
    */
-  public CoinsphStreamingService(CoinsphStreamingExchange exchange, org.knowm.xchange.service.streaming.StreamingExchangeConfiguration config) throws IOException {
+  public CoinsphStreamingService(CoinsphStreamingExchange exchange, info.bitrich.xchangestream.service.core.StreamingExchangeConfiguration config) throws IOException {
     super(null, // API URL will be set dynamically after listenKey is obtained
           Integer.MAX_VALUE, 
           config.getConnectionTimeout(), 
@@ -181,6 +184,7 @@ public class CoinsphStreamingService extends JsonNettyStreamingService {
         LOG.error("Error parsing channel from message: " + message.toString(), e);
         // Or handle error appropriately, maybe disconnect
     }
+}
   // Removed unused isUserDataChannel method
 
   private synchronized void startUserDataStream() {
