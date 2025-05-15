@@ -46,9 +46,9 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
 
   public CoinsphOrder placeCoinsphMarketOrder(MarketOrder marketOrder)
       throws IOException, CoinsphException {
-    String symbol = CoinsphAdapters.toSymbol(marketOrder.getCurrencyPair());
-    org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(marketOrder.getType());
-    org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.MARKET; // Explicitly MARKET
+    final String symbol = CoinsphAdapters.toSymbol(marketOrder.getCurrencyPair());
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(marketOrder.getType());
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.MARKET; // Explicitly MARKET
 
     final BigDecimal finalQuantity;
     final BigDecimal finalQuoteOrderQty;
@@ -88,9 +88,9 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
 
   public CoinsphOrder placeCoinsphLimitOrder(LimitOrder limitOrder)
       throws IOException, CoinsphException {
-    String symbol = CoinsphAdapters.toSymbol(limitOrder.getCurrencyPair());
-    org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(limitOrder.getType());
-    org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.LIMIT; // Explicitly LIMIT
+    final String symbol = CoinsphAdapters.toSymbol(limitOrder.getCurrencyPair());
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(limitOrder.getType());
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.LIMIT; // Explicitly LIMIT
 
     org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce initialTimeInForce = org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce.GTC; // Default
     for (Order.IOrderFlags flag : limitOrder.getOrderFlags()) {
@@ -130,8 +130,8 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
 
   public CoinsphOrder placeCoinsphStopOrder(org.knowm.xchange.dto.trade.StopOrder stopOrder)
       throws IOException, CoinsphException {
-    String symbol = CoinsphAdapters.toSymbol(stopOrder.getCurrencyPair());
-    org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(stopOrder.getType());
+    final String symbol = CoinsphAdapters.toSymbol(stopOrder.getCurrencyPair());
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(stopOrder.getType());
     
     // Determine final values for lambda
     final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType finalType;

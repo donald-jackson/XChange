@@ -36,7 +36,7 @@ public class CoinsphExchange extends BaseExchange implements Exchange {
   // Coins.ph specific URLs
 public static final String PARAM_RECV_WINDOW = "recvWindow";
   private static final String PRODUCTION_URL = "https://api.coins.ph"; // Placeholder, verify actual URL
-  public static final String SANDBOX_URL = "http://172.16.249.144:9999";
+  public static final String SANDBOX_URL = "http://192.168.8.157:9999";
 
   protected static ResilienceRegistries RESILIENCE_REGISTRIES;
   protected SynchronizedValueFactory<Long> timestampFactory;
