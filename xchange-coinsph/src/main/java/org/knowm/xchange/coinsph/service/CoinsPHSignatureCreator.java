@@ -27,8 +27,6 @@ public class CoinsPHSignatureCreator extends BaseParamsDigest {
     mac.update(getQuery(restInvocation).getBytes());
     byte[] signature = mac.doFinal();
     String result = bytesToHex(signature);
-
-    // System.out.println("DEBUG - Signature output: " + result); // Keep commented out unless debugging
     return result;
   }
 

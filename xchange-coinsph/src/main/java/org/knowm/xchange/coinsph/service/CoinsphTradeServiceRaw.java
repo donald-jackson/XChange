@@ -7,20 +7,15 @@ import org.knowm.xchange.client.ResilienceRegistries;
 import org.knowm.xchange.coinsph.CoinsphAdapters;
 import org.knowm.xchange.coinsph.CoinsphExchange;
 import org.knowm.xchange.coinsph.dto.CoinsphException;
-import org.knowm.xchange.coinsph.dto.trade.CoinsphNewOrderRequest; // For placing new orders
 import org.knowm.xchange.coinsph.dto.trade.CoinsphOrder;
-import org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce; // For order flags
 import org.knowm.xchange.coinsph.dto.trade.CoinsphUserTrade;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
-import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.MarketOrder;
-import org.knowm.xchange.dto.trade.StopOrder; // For stop orders
-import org.knowm.xchange.service.trade.params.CancelOrderByIdParams;
 import org.knowm.xchange.service.trade.params.CancelOrderByCurrencyPair;
+import org.knowm.xchange.service.trade.params.CancelOrderByIdParams;
 import org.knowm.xchange.service.trade.params.CancelOrderParams;
-// import org.knowm.xchange.service.trade.params.TradeHistoryParams; // For trade history
 
 public class CoinsphTradeServiceRaw extends CoinsphBaseService {
 
@@ -39,16 +34,16 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
                     signatureCreator,
                     currencyPair != null ? CoinsphAdapters.toSymbol(currencyPair) : null,
                     exchange.getRecvWindow()))
-        // .withRetry(retry("openOrders"))
-        // .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
         .call();
   }
 
   public CoinsphOrder placeCoinsphMarketOrder(MarketOrder marketOrder)
       throws IOException, CoinsphException {
     final String symbol = CoinsphAdapters.toSymbol(marketOrder.getCurrencyPair());
-    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(marketOrder.getType());
-    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.MARKET; // Explicitly MARKET
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side =
+        CoinsphAdapters.toSide(marketOrder.getType());
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type =
+        org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.MARKET; // Explicitly MARKET
 
     final BigDecimal finalQuantity;
     final BigDecimal finalQuoteOrderQty;
@@ -60,7 +55,7 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
       finalQuantity = marketOrder.getOriginalAmount();
       finalQuoteOrderQty = null;
     }
-    
+
     final String finalNewClientOrderId = marketOrder.getUserReference();
     final Long finalRecvWindow = exchange.getRecvWindow();
     // timeInForce, price, stopPrice are null for basic MARKET orders
@@ -81,26 +76,28 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
                     finalRecvWindow,
                     timestampFactory,
                     signatureCreator))
-        // .withRetry(retry("newOrder"))
-        // .withRateLimiter(rateLimiter(ORDERS_RATE_LIMITER))
         .call();
   }
 
   public CoinsphOrder placeCoinsphLimitOrder(LimitOrder limitOrder)
       throws IOException, CoinsphException {
     final String symbol = CoinsphAdapters.toSymbol(limitOrder.getCurrencyPair());
-    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(limitOrder.getType());
-    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.LIMIT; // Explicitly LIMIT
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side =
+        CoinsphAdapters.toSide(limitOrder.getType());
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType type =
+        org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.LIMIT; // Explicitly LIMIT
 
-    org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce initialTimeInForce = org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce.GTC; // Default
+    org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce initialTimeInForce =
+        org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce.GTC; // Default
     for (Order.IOrderFlags flag : limitOrder.getOrderFlags()) {
       if (flag instanceof org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) {
         initialTimeInForce = (org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag;
         break;
       }
     }
-    final org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce finalTimeInForce = initialTimeInForce;
-    
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce finalTimeInForce =
+        initialTimeInForce;
+
     final BigDecimal finalQuantity = limitOrder.getOriginalAmount();
     final BigDecimal finalPrice = limitOrder.getLimitPrice();
     final String finalNewClientOrderId = limitOrder.getUserReference();
@@ -123,16 +120,15 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
                     finalRecvWindow,
                     timestampFactory,
                     signatureCreator))
-        // .withRetry(retry("newOrder"))
-        // .withRateLimiter(rateLimiter(ORDERS_RATE_LIMITER))
         .call();
   }
 
   public CoinsphOrder placeCoinsphStopOrder(org.knowm.xchange.dto.trade.StopOrder stopOrder)
       throws IOException, CoinsphException {
     final String symbol = CoinsphAdapters.toSymbol(stopOrder.getCurrencyPair());
-    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side = CoinsphAdapters.toSide(stopOrder.getType());
-    
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide side =
+        CoinsphAdapters.toSide(stopOrder.getType());
+
     // Determine final values for lambda
     final org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType finalType;
     final BigDecimal finalPrice;
@@ -140,27 +136,29 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
 
     // Infer type: STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT
     // Defaulting to STOP_LOSS variants. User can use flags for TAKE_PROFIT.
-    // TODO: Add flag handling for TAKE_PROFIT vs STOP_LOSS selection.
     if (stopOrder.getLimitPrice() != null) {
-        finalType = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.STOP_LOSS_LIMIT;
-        finalPrice = stopOrder.getLimitPrice();
-        initialTimeInForce = org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce.GTC; // Default for limit part
-        for (Order.IOrderFlags flag : stopOrder.getOrderFlags()) {
-          if (flag instanceof org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) {
-            initialTimeInForce = (org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag;
-            break;
-          }
+      finalType = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.STOP_LOSS_LIMIT;
+      finalPrice = stopOrder.getLimitPrice();
+      initialTimeInForce =
+          org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce.GTC; // Default for limit part
+      for (Order.IOrderFlags flag : stopOrder.getOrderFlags()) {
+        if (flag instanceof org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) {
+          initialTimeInForce = (org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce) flag;
+          break;
         }
+      }
     } else {
-        finalType = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.STOP_LOSS;
-        finalPrice = null;
-        // initialTimeInForce remains null for market-triggering stop orders
+      finalType = org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType.STOP_LOSS;
+      finalPrice = null;
+      // initialTimeInForce remains null for market-triggering stop orders
     }
-    final org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce finalTimeInForce = initialTimeInForce;
+    final org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce finalTimeInForce =
+        initialTimeInForce;
 
     final BigDecimal finalQuantity;
     final BigDecimal finalQuoteOrderQty;
-    if (stopOrder.hasFlag(CoinsphAdapters.CoinsphOrderFlags.QUOTE_ORDER_QTY) && stopOrder.getLimitPrice() == null) {
+    if (stopOrder.hasFlag(CoinsphAdapters.CoinsphOrderFlags.QUOTE_ORDER_QTY)
+        && stopOrder.getLimitPrice() == null) {
       finalQuoteOrderQty = stopOrder.getOriginalAmount();
       finalQuantity = null;
     } else {
@@ -188,13 +186,10 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
                     finalRecvWindow,
                     timestampFactory,
                     signatureCreator))
-        // .withRetry(retry("newOrder"))
-        // .withRateLimiter(rateLimiter(ORDERS_RATE_LIMITER))
         .call();
   }
 
-  public boolean cancelCoinsphOrder(CancelOrderParams params)
-      throws IOException, CoinsphException {
+  public boolean cancelCoinsphOrder(CancelOrderParams params) throws IOException, CoinsphException {
     String symbol = null;
     Long orderId = null;
     String clientOrderId = null;
@@ -206,38 +201,32 @@ public class CoinsphTradeServiceRaw extends CoinsphBaseService {
       throw new IllegalArgumentException(
           "CancelOrderParams must implement CancelOrderByIdParams and CancelOrderByCurrencyPair for Coins.ph");
     }
-    
+
     if (params instanceof CancelOrderByCurrencyPair) {
-        symbol = CoinsphAdapters.toSymbol(((CancelOrderByCurrencyPair) params).getCurrencyPair());
+      symbol = CoinsphAdapters.toSymbol(((CancelOrderByCurrencyPair) params).getCurrencyPair());
     } else {
-        throw new IllegalArgumentException(
+      throw new IllegalArgumentException(
           "CancelOrderParams must implement CancelOrderByCurrencyPair for Coins.ph");
     }
-final String finalSymbol = symbol;
+    final String finalSymbol = symbol;
     final Long finalOrderId = orderId;
 
+    CoinsphOrder cancelledOrder =
+        decorateApiCall(
+                () ->
+                    coinsphAuthenticated.cancelOrder(
+                        apiKey,
+                        timestampFactory,
+                        signatureCreator,
+                        finalSymbol,
+                        finalOrderId,
+                        clientOrderId, // origClientOrderId
+                        exchange.getRecvWindow()))
+            .call();
 
-    // TODO: clientOrderId cancellation if API supports it
-    // if (params instanceof CancelOrderByClientOrderIdParams) {
-    //   clientOrderId = ((CancelOrderByClientOrderIdParams) params).getClientOrderId();
-    // }
-
-    CoinsphOrder cancelledOrder = decorateApiCall(
-            () ->
-                coinsphAuthenticated.cancelOrder(
-                    apiKey,
-                    timestampFactory,
-                    signatureCreator,
-                    finalSymbol,
-                    finalOrderId,
-                    clientOrderId, // origClientOrderId
-                    exchange.getRecvWindow()))
-        // .withRetry(retry("cancelOrder"))
-        // .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
-        .call();
-    
     // Coins.ph cancel returns the cancelled order. We need to check status.
-    return "CANCELED".equalsIgnoreCase(cancelledOrder.getStatus()) || "EXPIRED".equalsIgnoreCase(cancelledOrder.getStatus());
+    return "CANCELED".equalsIgnoreCase(cancelledOrder.getStatus())
+        || "EXPIRED".equalsIgnoreCase(cancelledOrder.getStatus());
   }
 
   public CoinsphOrder getCoinsphOrderStatus(String orderId, String symbol)
@@ -252,8 +241,6 @@ final String finalSymbol = symbol;
                     Long.valueOf(orderId),
                     null, // origClientOrderId
                     exchange.getRecvWindow()))
-        // .withRetry(retry("orderStatus"))
-        // .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER))
         .call();
   }
 
@@ -279,8 +266,6 @@ final String finalSymbol = symbol;
                     fromTradeId,
                     limit,
                     exchange.getRecvWindow()))
-        // .withRetry(retry("myTrades"))
-        // .withRateLimiter(rateLimiter(REQUEST_WEIGHT_RATE_LIMITER)) // Adjust weight if known, myTrades is 10
         .call();
   }
 }

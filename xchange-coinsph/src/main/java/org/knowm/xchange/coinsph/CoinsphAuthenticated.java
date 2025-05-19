@@ -1,42 +1,39 @@
 package org.knowm.xchange.coinsph;
 
 import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT; // Not used yet
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
-// import jakarta.ws.rs.PathParam; // Not used yet
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.Consumes; // Added for @Consumes
 import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
-// import java.util.Map; // Not used yet
-
-// TODO: Import Coins.ph specific DTOs as they are created
 import org.knowm.xchange.coinsph.dto.CoinsphException;
 import org.knowm.xchange.coinsph.dto.account.CoinsphAccount;
-import org.knowm.xchange.coinsph.dto.account.CoinsphTradeFee; // New DTO for trade fees
-import org.knowm.xchange.coinsph.dto.account.CoinsphListenKey; // DTO for listen key
-import org.knowm.xchange.coinsph.dto.trade.CoinsphNewOrderRequest; // New DTO for request
+import org.knowm.xchange.coinsph.dto.account.CoinsphDepositAddress;
+import org.knowm.xchange.coinsph.dto.account.CoinsphDepositRecord;
+import org.knowm.xchange.coinsph.dto.account.CoinsphListenKey;
+import org.knowm.xchange.coinsph.dto.account.CoinsphTradeFee;
+import org.knowm.xchange.coinsph.dto.account.CoinsphWithdrawal;
+import org.knowm.xchange.coinsph.dto.account.CoinsphWithdrawalRecord;
 import org.knowm.xchange.coinsph.dto.trade.CoinsphOrder;
+import org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide;
+import org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType;
+import org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce;
 import org.knowm.xchange.coinsph.dto.trade.CoinsphUserTrade;
-import org.knowm.xchange.coinsph.dto.trade.CoinsphOrderSide; // Enum
-import org.knowm.xchange.coinsph.dto.trade.CoinsphOrderType; // Enum
-import org.knowm.xchange.coinsph.dto.trade.CoinsphTimeInForce; // Enum
-
 import si.mazi.rescu.ParamsDigest;
 import si.mazi.rescu.SynchronizedValueFactory;
 
-@Path("/openapi/v1") // Base path for v1 of Coins.ph API
+@Path("/openapi") // Base path for all endpoints of Coins.ph API
 @Produces(MediaType.APPLICATION_JSON)
 public interface CoinsphAuthenticated extends Coinsph {
 
   String X_COINS_APIKEY = "X-COINS-APIKEY"; // Header name for API key
+
   // timestamp and signature are query/body params, not headers for signing purposes.
 
   // API key is in header X-COINS-APIKEY
@@ -55,7 +52,7 @@ public interface CoinsphAuthenticated extends Coinsph {
    * @throws org.knowm.xchange.coinsph.dto.CoinsphException
    */
   @GET
-  @Path("account")
+  @Path("/v1/account")
   CoinsphAccount getAccount(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
       @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
@@ -69,14 +66,15 @@ public interface CoinsphAuthenticated extends Coinsph {
    * @param apiKey
    * @param timestamp
    * @param signature
-   * @param symbol Optional. Trading symbol (e.g., BTCPHP). If not sent, fees for all symbols are returned.
+   * @param symbol Optional. Trading symbol (e.g., BTCPHP). If not sent, fees for all symbols are
+   *     returned.
    * @param recvWindow Optional.
    * @return List of trade fees
    * @throws IOException
    * @throws CoinsphException
    */
   @GET
-  @Path("asset/tradeFee")
+  @Path("/v1/asset/tradeFee")
   List<CoinsphTradeFee> getTradeFee(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
       @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
@@ -93,20 +91,23 @@ public interface CoinsphAuthenticated extends Coinsph {
    * @param signature
    * @param symbol Trading symbol (e.g., BTCPHP)
    * @param side BUY or SELL
-   * @param type LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT, LIMIT_MAKER
+   * @param type LIMIT, MARKET, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT,
+   *     LIMIT_MAKER
    * @param timeInForce Optional. GTC, IOC, FOK
    * @param quantity Order quantity
    * @param quoteOrderQty Optional. For MARKET orders, the amount of quote asset to spend/receive
    * @param price Optional. Order price, required for LIMIT orders
-   * @param newClientOrderId Optional. A unique id for the order. Automatically generated if not sent.
-   * @param stopPrice Optional. Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.
+   * @param newClientOrderId Optional. A unique id for the order. Automatically generated if not
+   *     sent.
+   * @param stopPrice Optional. Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and
+   *     TAKE_PROFIT_LIMIT orders.
    * @param recvWindow Optional. The value cannot be greater than 60000
    * @return
    * @throws IOException
    * @throws CoinsphException
    */
   @POST
-  @Path("order")
+  @Path("/v1/order")
   // @Consumes(MediaType.APPLICATION_JSON) // Removed, body will be empty
   CoinsphOrder newOrder(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
@@ -126,8 +127,7 @@ public interface CoinsphAuthenticated extends Coinsph {
       throws IOException, CoinsphException;
 
   /**
-   * Check an order's status.
-   * Either orderId or origClientOrderId must be sent.
+   * Check an order's status. Either orderId or origClientOrderId must be sent.
    *
    * @param apiKey
    * @param timestamp
@@ -141,12 +141,15 @@ public interface CoinsphAuthenticated extends Coinsph {
    * @throws org.knowm.xchange.coinsph.dto.CoinsphException
    */
   @GET
-  @Path("order")
+  @Path("/v1/order")
   CoinsphOrder getOrderStatus(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
       @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
       @QueryParam("signature") ParamsDigest signature,
-      @QueryParam("symbol") String symbol, // This is actually not in the API spec for GET /order, but often included for consistency
+      @QueryParam("symbol")
+          String
+              symbol, // This is actually not in the API spec for GET /order, but often included for
+      // consistency
       @QueryParam("orderId") Long orderId,
       @QueryParam("origClientOrderId") String origClientOrderId,
       @QueryParam("recvWindow") Long recvWindow)
@@ -167,7 +170,7 @@ public interface CoinsphAuthenticated extends Coinsph {
    * @throws CoinsphException
    */
   @DELETE
-  @Path("order")
+  @Path("/v1/order")
   CoinsphOrder cancelOrder(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
       @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
@@ -182,57 +185,48 @@ public interface CoinsphAuthenticated extends Coinsph {
   // =================================================================================================
 
   /**
-   * Start a new user data stream.
-   * The stream will close after 60 minutes unless a keepalive is sent.
+   * Start a new user data stream. The stream will close after 60 minutes unless a keepalive is
+   * sent.
    *
    * @param apiKey API key
-   * @param timestamp
-   * @param signature
    * @return
    * @throws IOException
    * @throws CoinsphException
    */
   @POST
-  @Path("userDataStream")
-  CoinsphListenKey createListenKey(
-      @HeaderParam(X_COINS_APIKEY) String apiKey)
+  @Path("/v1/userDataStream")
+  CoinsphListenKey createListenKey(@HeaderParam(X_COINS_APIKEY) String apiKey)
       throws IOException, CoinsphException;
 
   /**
-   * Keepalive a user data stream to prevent it from closing.
-   * User data streams will close after 60 minutes. It's recommended to send a ping about every 30 minutes.
+   * Keepalive a user data stream to prevent it from closing. User data streams will close after 60
+   * minutes. It's recommended to send a ping about every 30 minutes.
    *
    * @param apiKey API key
-   * @param timestamp
-   * @param signature
    * @param listenKey Listen key
    * @return
    * @throws IOException
    * @throws CoinsphException
    */
   @PUT
-  @Path("userDataStream")
+  @Path("/v1/userDataStream")
   Void keepAliveListenKey(
-      @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @QueryParam("listenKey") String listenKey)
+      @HeaderParam(X_COINS_APIKEY) String apiKey, @QueryParam("listenKey") String listenKey)
       throws IOException, CoinsphException;
 
   /**
    * Close a user data stream.
    *
    * @param apiKey API key
-   * @param timestamp
-   * @param signature
    * @param listenKey Listen key
    * @return
    * @throws IOException
    * @throws CoinsphException
    */
   @DELETE
-  @Path("userDataStream")
+  @Path("/v1/userDataStream")
   Void closeListenKey(
-      @HeaderParam(X_COINS_APIKEY) String apiKey,
-      @QueryParam("listenKey") String listenKey)
+      @HeaderParam(X_COINS_APIKEY) String apiKey, @QueryParam("listenKey") String listenKey)
       throws IOException, CoinsphException;
 
   /**
@@ -248,7 +242,7 @@ public interface CoinsphAuthenticated extends Coinsph {
    * @throws org.knowm.xchange.coinsph.dto.CoinsphException
    */
   @GET
-  @Path("openOrders")
+  @Path("/v1/openOrders")
   List<CoinsphOrder> getOpenOrders(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
       @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
@@ -258,8 +252,8 @@ public interface CoinsphAuthenticated extends Coinsph {
       throws IOException, CoinsphException;
 
   /**
-   * Get all account orders; active, canceled, or filled.
-   * This seems to map to /openapi/v1/historyOrders in Coins.ph docs
+   * Get all account orders; active, canceled, or filled. This seems to map to
+   * /openapi/v1/historyOrders in Coins.ph docs
    *
    * @param apiKey
    * @param timestamp
@@ -274,7 +268,7 @@ public interface CoinsphAuthenticated extends Coinsph {
    * @throws CoinsphException
    */
   @GET
-  @Path("historyOrders") // Changed from allOrders to match Coins.ph docs
+  @Path("/v1/historyOrders") // Changed from allOrders to match Coins.ph docs
   List<CoinsphOrder> getHistoryOrders(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
       @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
@@ -294,7 +288,8 @@ public interface CoinsphAuthenticated extends Coinsph {
    * @param timestamp
    * @param signature
    * @param symbol Trading symbol
-   * @param orderId Optional. This is not a direct filter in Coins.ph, but can be used to filter results post-fetch if needed.
+   * @param orderId Optional. This is not a direct filter in Coins.ph, but can be used to filter
+   *     results post-fetch if needed.
    * @param startTime Optional. Timestamp in ms
    * @param endTime Optional. Timestamp in ms
    * @param fromTradeId Optional. Trade Id to fetch from. Default gets most recent trades.
@@ -305,13 +300,14 @@ public interface CoinsphAuthenticated extends Coinsph {
    * @throws org.knowm.xchange.coinsph.dto.CoinsphException
    */
   @GET
-  @Path("myTrades")
+  @Path("/v1/myTrades")
   List<CoinsphUserTrade> getMyTrades(
       @HeaderParam(X_COINS_APIKEY) String apiKey,
       @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
       @QueryParam("signature") ParamsDigest signature,
       @QueryParam("symbol") String symbol, // API docs for myTrades require symbol
-      @QueryParam("orderId") Long orderId, // Not a direct filter in Coins.ph, but can be used by client
+      @QueryParam("orderId")
+          Long orderId, // Not a direct filter in Coins.ph, but can be used by client
       @QueryParam("startTime") Long startTime,
       @QueryParam("endTime") Long endTime,
       @QueryParam("fromId") Long fromTradeId, // API doc uses fromId, not fromTradeId
@@ -319,4 +315,59 @@ public interface CoinsphAuthenticated extends Coinsph {
       @QueryParam("recvWindow") Long recvWindow)
       throws IOException, CoinsphException;
 
+  // Withdraw API
+  @POST
+  @Path("/wallet/v1/withdraw/apply")
+  CoinsphWithdrawal withdraw(
+      @HeaderParam(X_COINS_APIKEY) String apiKey,
+      @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+      @QueryParam("signature") ParamsDigest signature,
+      @QueryParam("coin") String coin,
+      @QueryParam("network") String network,
+      @QueryParam("address") String address,
+      @QueryParam("amount") BigDecimal amount,
+      @QueryParam("addressTag") String addressTag,
+      @QueryParam("recvWindow") Long recvWindow)
+      throws IOException, CoinsphException;
+
+  // Deposit Address API
+  @GET
+  @Path("/wallet/v1/deposit/address")
+  CoinsphDepositAddress getDepositAddress(
+      @HeaderParam(X_COINS_APIKEY) String apiKey,
+      @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+      @QueryParam("signature") ParamsDigest signature,
+      @QueryParam("coin") String coin,
+      @QueryParam("network") String network,
+      @QueryParam("recvWindow") Long recvWindow)
+      throws IOException, CoinsphException;
+
+  // Deposit History API
+  @GET
+  @Path("/wallet/v1/deposit/history")
+  List<CoinsphDepositRecord> getDepositHistory(
+      @HeaderParam(X_COINS_APIKEY) String apiKey,
+      @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+      @QueryParam("signature") ParamsDigest signature,
+      @QueryParam("coin") String coin,
+      @QueryParam("startTime") Long startTime,
+      @QueryParam("endTime") Long endTime,
+      @QueryParam("limit") Integer limit,
+      @QueryParam("recvWindow") Long recvWindow)
+      throws IOException, CoinsphException;
+
+  // Withdrawal History API
+  @GET
+  @Path("/wallet/v1/withdraw/history")
+  List<CoinsphWithdrawalRecord> getWithdrawalHistory(
+      @HeaderParam(X_COINS_APIKEY) String apiKey,
+      @QueryParam("timestamp") SynchronizedValueFactory<Long> timestamp,
+      @QueryParam("signature") ParamsDigest signature,
+      @QueryParam("coin") String coin,
+      @QueryParam("withdrawOrderId") String withdrawOrderId,
+      @QueryParam("startTime") Long startTime,
+      @QueryParam("endTime") Long endTime,
+      @QueryParam("limit") Integer limit,
+      @QueryParam("recvWindow") Long recvWindow)
+      throws IOException, CoinsphException;
 }

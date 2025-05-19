@@ -1,7 +1,6 @@
 package org.knowm.xchange.coinsph.dto.marketdata;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.Getter;
@@ -22,7 +21,8 @@ public class CoinsphOrderBookEntry {
   @JsonCreator
   public CoinsphOrderBookEntry(List<BigDecimal> entry) {
     if (entry == null || entry.size() != 2) {
-      throw new IllegalArgumentException("Order book entry must be a list of two BigDecimals (price, quantity)");
+      throw new IllegalArgumentException(
+          "Order book entry must be a list of two BigDecimals (price, quantity)");
     }
     this.price = entry.get(0);
     this.quantity = entry.get(1);

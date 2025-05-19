@@ -15,6 +15,7 @@ public class CoinsphPublicTrade {
   private final BigDecimal quoteQty; // Quote asset quantity (price * qty)
   private final long time;
   private final boolean isBuyerMaker;
+
   // private final boolean isBestMatch; // Not in Coins.ph docs for public trades
 
   public CoinsphPublicTrade(

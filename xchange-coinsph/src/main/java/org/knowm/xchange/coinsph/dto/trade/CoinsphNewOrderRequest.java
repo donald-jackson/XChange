@@ -3,10 +3,10 @@ package org.knowm.xchange.coinsph.dto.trade;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Data
 @Builder
@@ -31,7 +31,8 @@ public class CoinsphNewOrderRequest {
   private BigDecimal quantity; // Required for most order types
 
   @JsonProperty("quoteOrderQty")
-  private BigDecimal quoteOrderQty; // Optional: For MARKET orders, specifies the amount of quote asset
+  private BigDecimal
+      quoteOrderQty; // Optional: For MARKET orders, specifies the amount of quote asset
 
   @JsonProperty("price")
   private BigDecimal price; // Required for LIMIT, STOP_LOSS_LIMIT, TAKE_PROFIT_LIMIT
@@ -40,7 +41,8 @@ public class CoinsphNewOrderRequest {
   private String newClientOrderId; // Optional
 
   @JsonProperty("stopPrice")
-  private BigDecimal stopPrice; // Optional: Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT
+  private BigDecimal
+      stopPrice; // Optional: Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT
 
   @JsonProperty("recvWindow")
   private Long recvWindow; // Optional

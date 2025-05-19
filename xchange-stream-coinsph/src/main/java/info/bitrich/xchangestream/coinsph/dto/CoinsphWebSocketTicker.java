@@ -9,33 +9,78 @@ import lombok.ToString;
 @ToString // Removed callSuper = true
 public class CoinsphWebSocketTicker { // Removed "extends CoinsphWebSocketEvent"
 
-  @JsonProperty("e") private final String eventType; // Added
-  @JsonProperty("E") private final long eventTime;   // Added
-  @JsonProperty("s") private final String symbol;
-  @JsonProperty("p") private final BigDecimal priceChange;
-  @JsonProperty("P") private final BigDecimal priceChangePercent;
-  @JsonProperty("w") private final BigDecimal weightedAvgPrice;
-  @JsonProperty("x") private final BigDecimal prevClosePrice; // Or first trade price
-  @JsonProperty("c") private final BigDecimal lastPrice;
-  @JsonProperty("Q") private final BigDecimal lastQty;
-  @JsonProperty("b") private final BigDecimal bidPrice;
-  @JsonProperty("B") private final BigDecimal bidQty;
-  @JsonProperty("a") private final BigDecimal askPrice;
-  @JsonProperty("A") private final BigDecimal askQty;
-  @JsonProperty("o") private final BigDecimal openPrice;
-  @JsonProperty("h") private final BigDecimal highPrice;
-  @JsonProperty("l") private final BigDecimal lowPrice;
-  @JsonProperty("v") private final BigDecimal volume; // Total traded base asset volume
-  @JsonProperty("q") private final BigDecimal quoteVolume; // Total traded quote asset volume
-  @JsonProperty("O") private final long openTime;
-  @JsonProperty("C") private final long closeTime;
-  @JsonProperty("F") private final long firstId; // First trade ID
-  @JsonProperty("L") private final long lastId; // Last trade ID
-  @JsonProperty("n") private final long count; // Total number of trades
+  @JsonProperty("e")
+  private final String eventType; // Added
+
+  @JsonProperty("E")
+  private final long eventTime; // Added
+
+  @JsonProperty("s")
+  private final String symbol;
+
+  @JsonProperty("p")
+  private final BigDecimal priceChange;
+
+  @JsonProperty("P")
+  private final BigDecimal priceChangePercent;
+
+  @JsonProperty("w")
+  private final BigDecimal weightedAvgPrice;
+
+  @JsonProperty("x")
+  private final BigDecimal prevClosePrice; // Or first trade price
+
+  @JsonProperty("c")
+  private final BigDecimal lastPrice;
+
+  @JsonProperty("Q")
+  private final BigDecimal lastQty;
+
+  @JsonProperty("b")
+  private final BigDecimal bidPrice;
+
+  @JsonProperty("B")
+  private final BigDecimal bidQty;
+
+  @JsonProperty("a")
+  private final BigDecimal askPrice;
+
+  @JsonProperty("A")
+  private final BigDecimal askQty;
+
+  @JsonProperty("o")
+  private final BigDecimal openPrice;
+
+  @JsonProperty("h")
+  private final BigDecimal highPrice;
+
+  @JsonProperty("l")
+  private final BigDecimal lowPrice;
+
+  @JsonProperty("v")
+  private final BigDecimal volume; // Total traded base asset volume
+
+  @JsonProperty("q")
+  private final BigDecimal quoteVolume; // Total traded quote asset volume
+
+  @JsonProperty("O")
+  private final long openTime;
+
+  @JsonProperty("C")
+  private final long closeTime;
+
+  @JsonProperty("F")
+  private final long firstId; // First trade ID
+
+  @JsonProperty("L")
+  private final long lastId; // Last trade ID
+
+  @JsonProperty("n")
+  private final long count; // Total number of trades
 
   public CoinsphWebSocketTicker(
       @JsonProperty("e") String eventType, // Added
-      @JsonProperty("E") long eventTime,   // Added
+      @JsonProperty("E") long eventTime, // Added
       @JsonProperty("s") String symbol,
       @JsonProperty("p") BigDecimal priceChange,
       @JsonProperty("P") BigDecimal priceChangePercent,
@@ -58,7 +103,7 @@ public class CoinsphWebSocketTicker { // Removed "extends CoinsphWebSocketEvent"
       @JsonProperty("L") long lastId,
       @JsonProperty("n") long count) {
     this.eventType = eventType; // Added
-    this.eventTime = eventTime;   // Added
+    this.eventTime = eventTime; // Added
     this.symbol = symbol;
     this.priceChange = priceChange;
     this.priceChangePercent = priceChangePercent;

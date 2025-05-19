@@ -6,43 +6,62 @@ import java.util.List;
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * WebSocket account position message from Coins.ph. Example:
+ * {"e":"outboundAccountPosition","E":1598464861000,"T":1598464861001,"B":[{"a":"BTC","f":"1.0","l":"0.0"}]}
+ */
 @Getter
 @ToString
 public class CoinsphWebSocketOutboundAccountPosition {
 
-  private final String eventType; // e
-  private final long eventTime; // E
-  private final long accountLastUpdateTime; // u
-  private final List<CoinsphWebSocketBalance> balances; // B
-  private final String accountEmail; // em (optional)
+  @JsonProperty("e")
+  private String eventType;
 
-  public CoinsphWebSocketOutboundAccountPosition(
-      @JsonProperty("e") String eventType,
-      @JsonProperty("E") long eventTime,
-      @JsonProperty("u") long accountLastUpdateTime,
-      @JsonProperty("B") List<CoinsphWebSocketBalance> balances,
-      @JsonProperty("em") String accountEmail) {
-    this.eventType = eventType;
-    this.eventTime = eventTime;
-    this.accountLastUpdateTime = accountLastUpdateTime;
-    this.balances = balances;
-    this.accountEmail = accountEmail;
+  @JsonProperty("E")
+  private long eventTime;
+
+  @JsonProperty("T")
+  private long accountUpdateTime;
+
+  @JsonProperty("B")
+  private List<Balance> balances;
+
+  public static class Balance {
+    @JsonProperty("a")
+    private String asset;
+
+    @JsonProperty("f")
+    private BigDecimal free;
+
+    @JsonProperty("l")
+    private BigDecimal locked;
+
+    public String getAsset() {
+      return asset;
+    }
+
+    public BigDecimal getFree() {
+      return free;
+    }
+
+    public BigDecimal getLocked() {
+      return locked;
+    }
   }
 
-  @Getter
-  @ToString
-  public static class CoinsphWebSocketBalance {
-    private final String asset; // a
-    private final BigDecimal free; // f
-    private final BigDecimal locked; // l
+  public String getEventType() {
+    return eventType;
+  }
 
-    public CoinsphWebSocketBalance(
-        @JsonProperty("a") String asset,
-        @JsonProperty("f") BigDecimal free,
-        @JsonProperty("l") BigDecimal locked) {
-      this.asset = asset;
-      this.free = free;
-      this.locked = locked;
-    }
+  public long getEventTime() {
+    return eventTime;
+  }
+
+  public long getAccountUpdateTime() {
+    return accountUpdateTime;
+  }
+
+  public List<Balance> getBalances() {
+    return balances;
   }
 }

@@ -35,7 +35,8 @@ public class CoinsphOrder {
       @JsonProperty("clientOrderId") String clientOrderId,
       @JsonProperty("price") BigDecimal price,
       @JsonProperty("quantity") BigDecimal origQty, // Matches "quantity" in response
-      @JsonProperty("executedQuantity") BigDecimal executedQty, // Matches "executedQuantity" in response
+      @JsonProperty("executedQuantity")
+          BigDecimal executedQty, // Matches "executedQuantity" in response
       @JsonProperty("total") BigDecimal cummulativeQuoteQty, // Matches "total" in response
       @JsonProperty("status") String status,
       @JsonProperty("timeInForce") String timeInForce,
@@ -46,7 +47,8 @@ public class CoinsphOrder {
       @JsonProperty("createTime") long time, // Matches "createTime" in response
       @JsonProperty("updateTime") long updateTime,
       @JsonProperty("isWorking") Boolean isWorking, // May not be present, handle null
-      @JsonProperty("quoteOrderQty") BigDecimal origQuoteOrderQty // Matches "quoteOrderQty" if present
+      @JsonProperty("quoteOrderQty")
+          BigDecimal origQuoteOrderQty // Matches "quoteOrderQty" if present
       ) {
     this.symbol = symbol;
     this.orderId = orderId;
@@ -73,7 +75,7 @@ public class CoinsphOrder {
     switch (status.toUpperCase()) {
       case "NEW":
       case "PARTIALLY_FILLED":
-      // Add other active statuses if any
+        // Add other active statuses if any
         return true;
       default:
         return false;

@@ -17,19 +17,4 @@ public class CoinsphTradeFee {
 
   @JsonProperty("takerCommission")
   private BigDecimal takerCommission; // e.g., 0.001 for 0.1%
-
-  // The API response is an array of these objects.
-  // Example:
-  // [
-  //   {
-  //     "symbol": "BTCPHP",
-  //     "makerCommission": "0.0010",
-  //     "takerCommission": "0.0020"
-  //   },
-  //   {
-  //     "symbol": "ETHPHP",
-  //     "makerCommission": "0.0015",
-  //     "takerCommission": "0.0025"
-  //   }
-  // ]
 }

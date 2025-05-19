@@ -4,13 +4,15 @@ import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.service.trade.params.DefaultTradeHistoryParamsTimeSpan;
 import org.knowm.xchange.service.trade.params.TradeHistoryParamCurrencyPair;
 import org.knowm.xchange.service.trade.params.TradeHistoryParamLimit;
-// import org.knowm.xchange.service.trade.params.TradeHistoryParamPaging; // Removed, using startId directly
+// import org.knowm.xchange.service.trade.params.TradeHistoryParamPaging; // Removed, using startId
+// directly
 import org.knowm.xchange.service.trade.params.TradeHistoryParamOrderId; // For orderId
 
 public class CoinsphTradeHistoryParams extends DefaultTradeHistoryParamsTimeSpan
     implements TradeHistoryParamCurrencyPair,
         TradeHistoryParamLimit,
-        // TradeHistoryParamPaging, // Removed as Coins.ph uses fromId (startId) and limit, not page numbers
+        // TradeHistoryParamPaging, // Removed as Coins.ph uses fromId (startId) and limit, not page
+        // numbers
         TradeHistoryParamOrderId {
 
   private CurrencyPair currencyPair; // Mandatory for Coins.ph

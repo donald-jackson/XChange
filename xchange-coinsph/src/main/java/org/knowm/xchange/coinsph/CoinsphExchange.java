@@ -1,49 +1,37 @@
 package org.knowm.xchange.coinsph;
 
-// TODO: Add necessary imports as classes are created
-
-import java.util.Map; // Will be used in remoteInit
-import org.apache.commons.lang3.ObjectUtils; // May be used
 import org.knowm.xchange.BaseExchange;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeSpecification;
-// TODO: Replace with Coinsph specific DTOs and Services
-// import org.knowm.xchange.coinsph.dto.account.CoinsphAssetDetail; // Example
+import org.knowm.xchange.client.ExchangeRestProxyBuilder;
+import org.knowm.xchange.client.ResilienceRegistries;
 import org.knowm.xchange.coinsph.dto.meta.CoinsphExchangeInfo;
+import org.knowm.xchange.coinsph.service.CoinsPHSignatureCreator;
 import org.knowm.xchange.coinsph.service.CoinsphAccountService;
 import org.knowm.xchange.coinsph.service.CoinsphMarketDataService;
 import org.knowm.xchange.coinsph.service.CoinsphMarketDataServiceRaw;
 import org.knowm.xchange.coinsph.service.CoinsphTradeService;
-import org.knowm.xchange.client.ResilienceRegistries;
-import org.knowm.xchange.currency.CurrencyPair; // Will be used in remoteInit
 import org.knowm.xchange.exceptions.ExchangeException;
 import org.knowm.xchange.utils.AuthUtils;
-import si.mazi.rescu.SynchronizedValueFactory;
-import si.mazi.rescu.ParamsDigest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.knowm.xchange.coinsph.CoinsphTimestampFactory;
-import org.knowm.xchange.coinsph.CoinsphResilience;
-import org.knowm.xchange.coinsph.CoinsphAdapters;
-import org.knowm.xchange.client.ExchangeRestProxyBuilder;
-import org.knowm.xchange.coinsph.service.CoinsPHSignatureCreator;
-
+import si.mazi.rescu.ParamsDigest;
+import si.mazi.rescu.SynchronizedValueFactory;
 
 public class CoinsphExchange extends BaseExchange implements Exchange {
   private static final Logger LOG = LoggerFactory.getLogger(CoinsphExchange.class);
 
   // Coins.ph specific URLs
-public static final String PARAM_RECV_WINDOW = "recvWindow";
-  private static final String PRODUCTION_URL = "https://api.coins.ph"; // Placeholder, verify actual URL
-  public static final String SANDBOX_URL = "http://192.168.8.157:9999";
+  public static final String PARAM_RECV_WINDOW = "recvWindow";
+  private static final String PRODUCTION_URL =
+      "https://api.coins.ph"; // Placeholder, verify actual URL
+  public static final String SANDBOX_URL = "https://9001.pl-qa.coinsxyz.me";
 
   protected static ResilienceRegistries RESILIENCE_REGISTRIES;
   protected SynchronizedValueFactory<Long> timestampFactory;
-protected Coinsph publicApi;
+  protected Coinsph publicApi;
   protected CoinsphAuthenticated authenticatedApi;
   protected ParamsDigest signatureCreator; // CoinsphDigest should implement/extend ParamsDigest
-
 
   @Override
   protected void initServices() {
@@ -65,7 +53,8 @@ protected Coinsph publicApi;
     // The timestampFactory provides this synchronized time.
     return timestampFactory;
   }
-public Coinsph getPublicApi() {
+
+  public Coinsph getPublicApi() {
     return publicApi;
   }
 
@@ -108,18 +97,25 @@ public Coinsph getPublicApi() {
 
     // Initialize API proxies using the provided exchangeSpecification
     // BEFORE calling super.applySpecification() which might call remoteInit/initServices
-    this.publicApi = ExchangeRestProxyBuilder.forInterface(Coinsph.class, exchangeSpecification).build();
-    this.authenticatedApi = ExchangeRestProxyBuilder.forInterface(CoinsphAuthenticated.class, exchangeSpecification).build();
-    
+    this.publicApi =
+        ExchangeRestProxyBuilder.forInterface(Coinsph.class, exchangeSpecification).build();
+    this.authenticatedApi =
+        ExchangeRestProxyBuilder.forInterface(CoinsphAuthenticated.class, exchangeSpecification)
+            .build();
+
     // Initialize signature creator
-    // Use the passed exchangeSpecification as this.exchangeSpecification might not be set yet by super
+    // Use the passed exchangeSpecification as this.exchangeSpecification might not be set yet by
+    // super
     if (exchangeSpecification.getSecretKey() != null) {
-        this.signatureCreator = CoinsPHSignatureCreator.createInstance(exchangeSpecification.getSecretKey());
+      this.signatureCreator =
+          CoinsPHSignatureCreator.createInstance(exchangeSpecification.getSecretKey());
     } else {
-        LOG.warn("Secret key not provided. Authenticated services will not be available.");
+      LOG.warn("Secret key not provided. Authenticated services will not be available.");
     }
 
-    super.applySpecification(exchangeSpecification); // Now call super, which will set this.exchangeSpecification and call initServices/remoteInit
+    super.applySpecification(
+        exchangeSpecification); // Now call super, which will set this.exchangeSpecification and
+    // call initServices/remoteInit
   }
 
   public boolean usingSandbox() {
@@ -129,11 +125,13 @@ public Coinsph getPublicApi() {
 
   public Long getRecvWindow() {
     // Coins.ph docs: "recvWindow (optional)"
-    // "If recvWindow is not sent with the request, it will default to 5000." - from Binance docs, assuming Coins.ph is similar.
+    // "If recvWindow is not sent with the request, it will default to 5000." - from Binance docs,
+    // assuming Coins.ph is similar.
     // So, if null, the server will use its default. We can return null here.
-    Object recvWindowObj = exchangeSpecification.getExchangeSpecificParametersItem(PARAM_RECV_WINDOW);
+    Object recvWindowObj =
+        exchangeSpecification.getExchangeSpecificParametersItem(PARAM_RECV_WINDOW);
     if (recvWindowObj == null) {
-      return null; 
+      return null;
     }
     if (recvWindowObj instanceof Number) {
       return ((Number) recvWindowObj).longValue();
@@ -141,7 +139,8 @@ public Coinsph getPublicApi() {
     try {
       return Long.parseLong(recvWindowObj.toString());
     } catch (NumberFormatException e) {
-      LOG.warn("Invalid format for {} parameter: {}. Using null.", PARAM_RECV_WINDOW, recvWindowObj, e);
+      LOG.warn(
+          "Invalid format for {} parameter: {}. Using null.", PARAM_RECV_WINDOW, recvWindowObj, e);
       return null;
     }
   }
@@ -151,8 +150,10 @@ public Coinsph getPublicApi() {
     try {
       LOG.debug("Starting remoteInit for Coins.ph");
       // Fetch exchange info
-      CoinsphMarketDataServiceRaw marketDataServiceRaw = (CoinsphMarketDataServiceRaw) this.marketDataService;
-      CoinsphExchangeInfo exchangeInfo = this.publicApi.exchangeInfo(); // Use direct publicApi field
+      CoinsphMarketDataServiceRaw marketDataServiceRaw =
+          (CoinsphMarketDataServiceRaw) this.marketDataService;
+      CoinsphExchangeInfo exchangeInfo =
+          this.publicApi.exchangeInfo(); // Use direct publicApi field
       LOG.debug("Fetched CoinsphExchangeInfo: {}", exchangeInfo);
 
       // Adapt to XChange DTOs
@@ -172,7 +173,8 @@ public Coinsph getPublicApi() {
     } catch (Exception e) {
       // SynchronizedValueFactory should not throw an exception, so we can catch them here.
       if (timestampFactory instanceof CoinsphTimestampFactory) {
-        ((CoinsphTimestampFactory) timestampFactory).resync(); // Try to resync time even if remoteInit failed
+        ((CoinsphTimestampFactory) timestampFactory)
+            .resync(); // Try to resync time even if remoteInit failed
       }
       throw new ExchangeException("Failed to initialize Coins.ph exchange: " + e.getMessage(), e);
     }

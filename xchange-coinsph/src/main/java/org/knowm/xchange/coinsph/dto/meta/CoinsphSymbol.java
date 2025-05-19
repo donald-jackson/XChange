@@ -22,8 +22,7 @@ public class CoinsphSymbol {
   private final boolean allowTrailingStop;
   private final boolean cancelReplaceAllowed; // Not in Coins.ph docs, from Binance
   private final boolean isSpotTradingAllowed;
-  // private final boolean isMarginTradingAllowed; // Not explicitly in Coins.ph docs for symbol
-  private final List<Object> filters; // TODO: Define specific CoinsphSymbolFilter DTOs
+  private final List<Object> filters;
   private final List<String> permissions; // e.g. ["SPOT"]
 
   public CoinsphSymbol(

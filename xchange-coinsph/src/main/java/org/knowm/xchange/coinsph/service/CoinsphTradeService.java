@@ -1,8 +1,10 @@
 package org.knowm.xchange.coinsph.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import org.knowm.xchange.client.ResilienceRegistries;
 import org.knowm.xchange.coinsph.CoinsphAdapters;
 import org.knowm.xchange.coinsph.CoinsphExchange;
@@ -19,24 +21,17 @@ import org.knowm.xchange.dto.trade.UserTrades;
 import org.knowm.xchange.service.trade.TradeService;
 import org.knowm.xchange.service.trade.params.CancelOrderParams;
 import org.knowm.xchange.service.trade.params.TradeHistoryParamCurrencyPair;
-import org.knowm.xchange.service.trade.params.TradeHistoryParamLimit;
-import org.knowm.xchange.service.trade.params.TradeHistoryParamOrderId;
-import org.knowm.xchange.service.trade.params.CurrencyPairParam; // Added for getOrder
-import org.knowm.xchange.service.trade.params.InstrumentParam; // Added for getOrder
-import org.knowm.xchange.service.trade.params.TradeHistoryParamPaging;
 import org.knowm.xchange.service.trade.params.TradeHistoryParams;
-import org.knowm.xchange.service.trade.params.TradeHistoryParamsIdSpan; // Added for getTradeHistory
-import org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan;
-import org.knowm.xchange.instrument.Instrument; // Added for OpenOrdersParams
-import org.knowm.xchange.service.trade.params.orders.OpenOrdersParamCurrencyPair; // Added for OpenOrdersParams
-import org.knowm.xchange.service.trade.params.orders.OpenOrdersParamInstrument; // Added for OpenOrdersParams
 import org.knowm.xchange.service.trade.params.orders.OpenOrdersParams;
 import org.knowm.xchange.service.trade.params.orders.OrderQueryParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CoinsphTradeService extends CoinsphTradeServiceRaw implements TradeService {
 
-  public CoinsphTradeService(
-      CoinsphExchange exchange, ResilienceRegistries resilienceRegistries) {
+  private static final Logger LOG = LoggerFactory.getLogger(CoinsphTradeService.class);
+
+  public CoinsphTradeService(CoinsphExchange exchange, ResilienceRegistries resilienceRegistries) {
     super(exchange, resilienceRegistries);
   }
 
@@ -49,10 +44,16 @@ public class CoinsphTradeService extends CoinsphTradeServiceRaw implements Trade
   @Override
   public OpenOrders getOpenOrders(OpenOrdersParams params) throws IOException, CoinsphException {
     CurrencyPair currencyPair = null;
-    if (params instanceof org.knowm.xchange.service.trade.params.orders.OpenOrdersParamCurrencyPair) {
-      currencyPair = ((org.knowm.xchange.service.trade.params.orders.OpenOrdersParamCurrencyPair) params).getCurrencyPair();
-    } else if (params instanceof org.knowm.xchange.service.trade.params.orders.OpenOrdersParamInstrument) {
-      org.knowm.xchange.instrument.Instrument instrument = ((org.knowm.xchange.service.trade.params.orders.OpenOrdersParamInstrument) params).getInstrument();
+    if (params
+        instanceof org.knowm.xchange.service.trade.params.orders.OpenOrdersParamCurrencyPair) {
+      currencyPair =
+          ((org.knowm.xchange.service.trade.params.orders.OpenOrdersParamCurrencyPair) params)
+              .getCurrencyPair();
+    } else if (params
+        instanceof org.knowm.xchange.service.trade.params.orders.OpenOrdersParamInstrument) {
+      org.knowm.xchange.instrument.Instrument instrument =
+          ((org.knowm.xchange.service.trade.params.orders.OpenOrdersParamInstrument) params)
+              .getInstrument();
       if (instrument instanceof org.knowm.xchange.currency.CurrencyPair) {
         currencyPair = (org.knowm.xchange.currency.CurrencyPair) instrument;
       }
@@ -82,7 +83,8 @@ public class CoinsphTradeService extends CoinsphTradeServiceRaw implements Trade
 
   @Override
   public boolean cancelOrder(String orderId) throws IOException, CoinsphException {
-    // TODO: Need to find the symbol for this orderId first, or API needs to allow cancel without symbol
+    // TODO: Need to find the symbol for this orderId first, or API needs to allow cancel without
+    // symbol
     // For now, assume cancelOrder(CancelOrderParams) is used
     throw new UnsupportedOperationException(
         "cancelOrder by orderId only is not supported. Use CancelOrderParams.");
@@ -94,19 +96,22 @@ public class CoinsphTradeService extends CoinsphTradeServiceRaw implements Trade
   }
 
   @Override
-  public UserTrades getTradeHistory(TradeHistoryParams params) throws IOException, CoinsphException {
+  public UserTrades getTradeHistory(TradeHistoryParams params)
+      throws IOException, CoinsphException {
     if (!(params instanceof TradeHistoryParamCurrencyPair)) {
-      throw new IllegalArgumentException("TradeHistoryParams must implement TradeHistoryParamCurrencyPair for Coins.ph");
+      throw new IllegalArgumentException(
+          "TradeHistoryParams must implement TradeHistoryParamCurrencyPair for Coins.ph");
     }
     CurrencyPair currencyPair = ((TradeHistoryParamCurrencyPair) params).getCurrencyPair();
     if (currencyPair == null) {
-        throw new IllegalArgumentException("CurrencyPair cannot be null for Coins.ph trade history");
+      throw new IllegalArgumentException("CurrencyPair cannot be null for Coins.ph trade history");
     }
     String symbol = CoinsphAdapters.toSymbol(currencyPair);
 
     Long startTime = null;
     if (params instanceof org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan) {
-      org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan timeParams = (org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan) params;
+      org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan timeParams =
+          (org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan) params;
       if (timeParams.getStartTime() != null) {
         startTime = timeParams.getStartTime().getTime();
       }
@@ -114,12 +119,13 @@ public class CoinsphTradeService extends CoinsphTradeServiceRaw implements Trade
 
     Long endTime = null;
     if (params instanceof org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan) {
-      org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan timeParams = (org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan) params;
+      org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan timeParams =
+          (org.knowm.xchange.service.trade.params.TradeHistoryParamsTimeSpan) params;
       if (timeParams.getEndTime() != null) {
         endTime = timeParams.getEndTime().getTime();
       }
     }
-    
+
     Integer limit = null;
     if (params instanceof org.knowm.xchange.service.trade.params.TradeHistoryParamLimit) {
       limit = ((org.knowm.xchange.service.trade.params.TradeHistoryParamLimit) params).getLimit();
@@ -132,31 +138,35 @@ public class CoinsphTradeService extends CoinsphTradeServiceRaw implements Trade
         try {
           fromTradeId = Long.parseLong(startIdStr);
         } catch (NumberFormatException e) {
-          throw new IllegalArgumentException("startId from CoinsphTradeHistoryParams must be a Long for Coins.ph", e);
+          throw new IllegalArgumentException(
+              "startId from CoinsphTradeHistoryParams must be a Long for Coins.ph", e);
         }
       }
     } else if (params instanceof org.knowm.xchange.service.trade.params.TradeHistoryParamsIdSpan) {
-      String startIdStr = ((org.knowm.xchange.service.trade.params.TradeHistoryParamsIdSpan) params).getStartId();
+      String startIdStr =
+          ((org.knowm.xchange.service.trade.params.TradeHistoryParamsIdSpan) params).getStartId();
       if (startIdStr != null) {
         try {
           fromTradeId = Long.parseLong(startIdStr);
         } catch (NumberFormatException e) {
-          throw new IllegalArgumentException("startId from TradeHistoryParamsIdSpan must be a Long for Coins.ph", e);
+          throw new IllegalArgumentException(
+              "startId from TradeHistoryParamsIdSpan must be a Long for Coins.ph", e);
         }
       }
     }
     // TradeHistoryParamPaging (pageNumber, pageLength) is not used for fromTradeId here.
-    
+
     Long orderId = null;
     if (params instanceof org.knowm.xchange.service.trade.params.TradeHistoryParamOrderId) {
-        String orderIdStr = ((org.knowm.xchange.service.trade.params.TradeHistoryParamOrderId) params).getOrderId();
-        if (orderIdStr != null) {
-            try {
-                orderId = Long.parseLong(orderIdStr);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("orderId must be a Long for Coins.ph", e);
-            }
+      String orderIdStr =
+          ((org.knowm.xchange.service.trade.params.TradeHistoryParamOrderId) params).getOrderId();
+      if (orderIdStr != null) {
+        try {
+          orderId = Long.parseLong(orderIdStr);
+        } catch (NumberFormatException e) {
+          throw new IllegalArgumentException("orderId must be a Long for Coins.ph", e);
         }
+      }
     }
 
     List<org.knowm.xchange.coinsph.dto.trade.CoinsphUserTrade> userTrades =
@@ -171,18 +181,45 @@ public class CoinsphTradeService extends CoinsphTradeServiceRaw implements Trade
 
   @Override
   public OpenOrdersParams createOpenOrdersParams() {
-    // return new CoinsphOpenOrdersParams(); // TODO: Create this class
-    throw new UnsupportedOperationException("createOpenOrdersParams not implemented yet");
+    return new org.knowm.xchange.coinsph.dto.trade.CoinsphOpenOrdersParams();
   }
 
   @Override
   public Collection<Order> getOrder(String... orderIds) throws IOException, CoinsphException {
-    // TODO: Implement if API supports fetching multiple orders by ID
-    throw new UnsupportedOperationException("getOrder by multiple orderIds not implemented yet");
+    List<Order> orders = new ArrayList<>();
+
+    // Coins.ph API requires a symbol for getOrderStatus, so we can't directly fetch multiple orders
+    // Instead, we'll fetch each order individually and combine the results
+    for (String orderId : orderIds) {
+      try {
+        // Try to find the order in open orders first (which includes symbol information)
+        List<CoinsphOrder> openOrders = getCoinsphOpenOrders(null);
+        Optional<CoinsphOrder> matchingOpenOrder =
+            openOrders.stream()
+                .filter(order -> String.valueOf(order.getOrderId()).equals(orderId))
+                .findFirst();
+
+        if (matchingOpenOrder.isPresent()) {
+          orders.add(CoinsphAdapters.adaptOrder(matchingOpenOrder.get()));
+        } else {
+          // If not found in open orders, we need to query order history
+          // This is a limitation as we don't know the symbol for a specific orderId
+          // In a real implementation, you might want to cache symbol-orderId mappings
+          // or query all symbols the user has traded
+          LOG.warn(
+              "Order {} not found in open orders. Cannot query by ID without symbol.", orderId);
+        }
+      } catch (Exception e) {
+        LOG.error("Error fetching order {}: {}", orderId, e.getMessage());
+      }
+    }
+
+    return orders;
   }
 
   @Override
-  public Collection<Order> getOrder(OrderQueryParams... params) throws IOException, CoinsphException {
+  public Collection<Order> getOrder(OrderQueryParams... params)
+      throws IOException, CoinsphException {
     List<Order> orders = new java.util.ArrayList<>();
     for (OrderQueryParams param : params) {
       String orderId = param.getOrderId();
@@ -191,7 +228,8 @@ public class CoinsphTradeService extends CoinsphTradeServiceRaw implements Trade
       if (param instanceof org.knowm.xchange.service.trade.params.CurrencyPairParam) {
         pair = ((org.knowm.xchange.service.trade.params.CurrencyPairParam) param).getCurrencyPair();
       } else if (param instanceof org.knowm.xchange.service.trade.params.InstrumentParam) {
-        org.knowm.xchange.instrument.Instrument instrument = ((org.knowm.xchange.service.trade.params.InstrumentParam) param).getInstrument();
+        org.knowm.xchange.instrument.Instrument instrument =
+            ((org.knowm.xchange.service.trade.params.InstrumentParam) param).getInstrument();
         if (instrument instanceof org.knowm.xchange.currency.CurrencyPair) {
           pair = (org.knowm.xchange.currency.CurrencyPair) instrument;
         }
@@ -202,10 +240,7 @@ public class CoinsphTradeService extends CoinsphTradeServiceRaw implements Trade
         throw new IllegalArgumentException(
             "OrderQueryParams must include OrderId and CurrencyPair (via CurrencyPairParam or InstrumentParam) for Coins.ph");
       }
-      CoinsphOrder coinsphOrder =
-          getCoinsphOrderStatus(
-              orderId, 
-              CoinsphAdapters.toSymbol(pair));
+      CoinsphOrder coinsphOrder = getCoinsphOrderStatus(orderId, CoinsphAdapters.toSymbol(pair));
       if (coinsphOrder != null) { // Ensure order is found before adapting
         orders.add(CoinsphAdapters.adaptOrder(coinsphOrder));
       }

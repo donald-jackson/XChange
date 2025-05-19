@@ -12,8 +12,11 @@ import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.service.marketdata.MarketDataService;
 import org.knowm.xchange.service.marketdata.params.Params;
-import java.util.stream.Collectors; // For getTickers
-// import org.knowm.xchange.coinsph.dto.marketdata.CoinsphTicker; // May not be needed if CoinsphAdapters handles all
+
+// For getTickers
+
+// import org.knowm.xchange.coinsph.dto.marketdata.CoinsphTicker; // May not be needed if
+// CoinsphAdapters handles all
 
 public class CoinsphMarketDataService extends CoinsphMarketDataServiceRaw
     implements MarketDataService {
@@ -26,17 +29,18 @@ public class CoinsphMarketDataService extends CoinsphMarketDataServiceRaw
   @Override
   public Ticker getTicker(CurrencyPair currencyPair, Object... args)
       throws IOException, CoinsphException {
-    org.knowm.xchange.coinsph.dto.marketdata.CoinsphTicker coinsphTicker = getCoinsphTicker(currencyPair);
+    org.knowm.xchange.coinsph.dto.marketdata.CoinsphTicker coinsphTicker =
+        getCoinsphTicker(currencyPair);
     return CoinsphAdapters.adaptTicker(coinsphTicker);
   }
 
   @Override
   public List<Ticker> getTickers(Params params) throws IOException, CoinsphException {
     // Coins.ph API for all tickers doesn't take params, it returns all.
-    List<org.knowm.xchange.coinsph.dto.marketdata.CoinsphTicker> coinsphTickers = getCoinsphTickers();
+    List<org.knowm.xchange.coinsph.dto.marketdata.CoinsphTicker> coinsphTickers =
+        getCoinsphTickers();
     return CoinsphAdapters.adaptTickers(coinsphTickers);
   }
-
 
   @Override
   public OrderBook getOrderBook(CurrencyPair currencyPair, Object... args)
@@ -50,7 +54,8 @@ public class CoinsphMarketDataService extends CoinsphMarketDataServiceRaw
             "Argument 0 for getOrderBook must be an Integer (limit) or null");
       }
     }
-    org.knowm.xchange.coinsph.dto.marketdata.CoinsphOrderBook coinsphOrderBook = getCoinsphOrderBook(currencyPair, limit);
+    org.knowm.xchange.coinsph.dto.marketdata.CoinsphOrderBook coinsphOrderBook =
+        getCoinsphOrderBook(currencyPair, limit);
     return CoinsphAdapters.adaptOrderBook(coinsphOrderBook, currencyPair);
   }
 
@@ -66,7 +71,8 @@ public class CoinsphMarketDataService extends CoinsphMarketDataServiceRaw
             "Argument 0 for getTrades must be an Integer (limit) or null for Coins.ph public trades");
       }
     }
-    List<org.knowm.xchange.coinsph.dto.marketdata.CoinsphPublicTrade> coinsphTrades = getCoinsphTrades(currencyPair, limit);
+    List<org.knowm.xchange.coinsph.dto.marketdata.CoinsphPublicTrade> coinsphTrades =
+        getCoinsphTrades(currencyPair, limit);
     return CoinsphAdapters.adaptTrades(coinsphTrades, currencyPair);
   }
 }

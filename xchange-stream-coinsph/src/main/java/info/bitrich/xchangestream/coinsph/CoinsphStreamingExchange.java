@@ -4,22 +4,17 @@ import info.bitrich.xchangestream.core.ProductSubscription;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import info.bitrich.xchangestream.core.StreamingTradeService;
-import info.bitrich.xchangestream.service.netty.StreamingService;
+import info.bitrich.xchangestream.service.core.StreamingExchangeConfiguration;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import org.knowm.xchange.coinsph.CoinsphExchange;
-import org.knowm.xchange.coinsph.service.CoinsphAccountServiceRaw;
-import org.knowm.xchange.exceptions.NotYetImplementedForExchangeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CoinsphStreamingExchange extends CoinsphExchange implements StreamingExchange {
+  private static final Logger LOG = LoggerFactory.getLogger(CoinsphStreamingExchange.class);
 
-  // TODO: Get actual WebSocket API URLs (public and private if different) from Coins.ph docs
-  // Public/Combined stream URL from docs: wss://wsapi.pro.coins.ph/openapi/quote/stream
-  private static final String PUBLIC_API_URI = "wss://wsapi.pro.coins.ph/openapi/quote/stream";
-  // User data stream base URL from docs: wss://wsapi.pro.coins.ph
-  // Full path is /openapi/ws/<listenKey>
-  private static final String USER_DATA_API_BASE_URI = "wss://wsapi.pro.coins.ph";
-
+  public static final String PUBLIC_API_URI = "wss://wsapi.pro.coins.ph/openapi/quote/stream";
   private CoinsphStreamingService publicStreamingService;
   private CoinsphStreamingService privateStreamingService; // For user data streams
 
@@ -27,7 +22,18 @@ public class CoinsphStreamingExchange extends CoinsphExchange implements Streami
   private CoinsphStreamingTradeService streamingTradeService;
   private CoinsphStreamingAccountService streamingAccountService;
 
-  public CoinsphStreamingExchange() {}
+  private StreamingExchangeConfiguration configuration;
+
+  private String userDataApiBaseUri = "wss://wsapi.pro.coins.ph/openapi/ws/";
+
+  public CoinsphStreamingExchange() {
+    this.configuration = getDefaultConfiguration();
+  }
+
+  /** Returns the default configuration for this exchange. */
+  public static StreamingExchangeConfiguration getDefaultConfiguration() {
+    return new StreamingExchangeConfiguration();
+  }
 
   @Override
   protected void initServices() {
@@ -35,14 +41,43 @@ public class CoinsphStreamingExchange extends CoinsphExchange implements Streami
   }
 
   private void initStreamingServices() {
-    CoinsphAccountServiceRaw accountServiceRaw = (CoinsphAccountServiceRaw) getAccountService();
+    if (Boolean.TRUE.equals(
+        getExchangeSpecification().getExchangeSpecificParametersItem(USE_SANDBOX))) {
+      this.userDataApiBaseUri = "wss://ws.9001.pl-qa.coinsxyz.me/openapi/ws/";
+    }
+    this.publicStreamingService =
+        new CoinsphStreamingService(
+            PUBLIC_API_URI, null, false); // No account service needed for public
 
-    this.publicStreamingService = new CoinsphStreamingService(PUBLIC_API_URI, null); // No account service needed for public
-    this.privateStreamingService = new CoinsphStreamingService(USER_DATA_API_BASE_URI, accountServiceRaw, true); // Mark as private service
+    try {
+      // Initialize private streaming service if we have API credentials
+      if (exchangeSpecification.getApiKey() != null
+          && exchangeSpecification.getSecretKey() != null) {
+        LOG.info("Initializing private streaming service with API credentials");
+        this.privateStreamingService =
+            new CoinsphStreamingService(this, configuration); // Mark as private service
+      } else {
+        LOG.info("No API credentials provided, private streaming service won't be initialized");
+        this.privateStreamingService = null;
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to initialize private streaming service", e);
+      this.privateStreamingService = null;
+    }
 
     this.streamingMarketDataService = new CoinsphStreamingMarketDataService(publicStreamingService);
-    this.streamingTradeService = new CoinsphStreamingTradeService(privateStreamingService);
-    this.streamingAccountService = new CoinsphStreamingAccountService(privateStreamingService);
+
+    if (privateStreamingService != null) {
+      this.streamingTradeService =
+          new CoinsphStreamingTradeService(privateStreamingService, getTradeService());
+      this.streamingAccountService =
+          new CoinsphStreamingAccountService(privateStreamingService, getAccountService());
+    }
+  }
+
+  /** Get the base URI for user data streams. */
+  public String getUserStreamingBaseUri() {
+    return userDataApiBaseUri;
   }
 
   @Override
@@ -50,21 +85,35 @@ public class CoinsphStreamingExchange extends CoinsphExchange implements Streami
     if (publicStreamingService == null || privateStreamingService == null) {
       initStreamingServices();
     }
-    // Connect public streams
-    Completable publicConnect = publicStreamingService.connect().doOnComplete(() -> {
-        // Handle product subscriptions for public streams if any
-        // e.g., publicStreamingService.subscribeProducts(args);
-    });
-    // Connect private streams (this will trigger listenKey acquisition and dynamic URL)
-    Completable privateConnect = privateStreamingService.connect(); 
+
+    // Connect services that are available
+    Completable publicConnect = Completable.complete();
+    Completable privateConnect = Completable.complete();
+
+    if (publicStreamingService != null) {
+      publicConnect = publicStreamingService.connect();
+    }
+
+    if (privateStreamingService != null) {
+      privateConnect = privateStreamingService.connect();
+    }
 
     return Completable.concatArray(publicConnect, privateConnect);
   }
 
   @Override
   public Completable disconnect() {
-    Completable publicDisconnect = publicStreamingService != null ? publicStreamingService.disconnect() : Completable.complete();
-    Completable privateDisconnect = privateStreamingService != null ? privateStreamingService.disconnect() : Completable.complete();
+    Completable publicDisconnect = Completable.complete();
+    Completable privateDisconnect = Completable.complete();
+
+    if (publicStreamingService != null) {
+      publicDisconnect = publicStreamingService.disconnect();
+    }
+
+    if (privateStreamingService != null) {
+      privateDisconnect = privateStreamingService.disconnect();
+    }
+
     return Completable.concatArray(publicDisconnect, privateDisconnect);
   }
 
@@ -73,24 +122,32 @@ public class CoinsphStreamingExchange extends CoinsphExchange implements Streami
     // Consider alive if both services are configured and at least one is open,
     // or define more specific logic (e.g. public must be alive for market data)
     boolean publicAlive = publicStreamingService != null && publicStreamingService.isSocketOpen();
-    boolean privateAlive = privateStreamingService != null && privateStreamingService.isSocketOpen();
+    boolean privateAlive =
+        privateStreamingService != null && privateStreamingService.isSocketOpen();
     return publicAlive || privateAlive; // Or publicAlive && privateAlive if both are essential
   }
 
-  // These might need to be more nuanced if we want to distinguish between public/private service events
+  // These might need to be more nuanced if we want to distinguish between public/private service
+  // events
   @Override
   public Observable<Throwable> reconnectFailure() {
     // Merge or choose one? For now, let's take public as primary for general health.
-    return publicStreamingService != null ? publicStreamingService.subscribeReconnectFailure() : Observable.empty();
-    // Or: return Observable.merge(publicStreamingService.subscribeReconnectFailure(), privateStreamingService.subscribeReconnectFailure());
+    return publicStreamingService != null
+        ? publicStreamingService.subscribeReconnectFailure()
+        : Observable.empty();
+    // Or: return Observable.merge(publicStreamingService.subscribeReconnectFailure(),
+    // privateStreamingService.subscribeReconnectFailure());
   }
 
   @Override
   public Observable<Object> connectionSuccess() {
-    return publicStreamingService != null ? publicStreamingService.subscribeConnectionSuccess() : Observable.empty();
-    // Or: return Observable.merge(publicStreamingService.subscribeConnectionSuccess(), privateStreamingService.subscribeConnectionSuccess());
+    return publicStreamingService != null
+        ? publicStreamingService.subscribeConnectionSuccess()
+        : Observable.empty();
+    // Or: return Observable.merge(publicStreamingService.subscribeConnectionSuccess(),
+    // privateStreamingService.subscribeConnectionSuccess());
   }
-  
+
   @Override
   public StreamingMarketDataService getStreamingMarketDataService() {
     if (streamingMarketDataService == null) initStreamingServices();
@@ -112,10 +169,18 @@ public class CoinsphStreamingExchange extends CoinsphExchange implements Streami
   @Override
   public void useCompressedMessages(boolean compressedMessages) {
     if (compressedMessages) {
-        LOG.warn("Compressed messages requested, but Coins.ph WebSocket compression support is unconfirmed. Ignoring.");
+      LOG.warn(
+          "Compressed messages requested, but Coins.ph WebSocket compression support is unconfirmed. Ignoring.");
     }
-    // If supported, apply to both services:
-    // if (publicStreamingService != null) publicStreamingService.useCompressedMessages(compressedMessages);
-    // if (privateStreamingService != null) privateStreamingService.useCompressedMessages(compressedMessages);
+  }
+
+  @Override
+  public void resubscribeChannels() {
+    if (publicStreamingService != null) {
+      publicStreamingService.resubscribeChannels();
+    }
+    if (privateStreamingService != null) {
+      privateStreamingService.resubscribeChannels();
+    }
   }
 }

@@ -9,8 +9,7 @@ public class CoinsphException extends HttpStatusExceptionSupport {
 
   private final int code; // Coins.ph specific error code
 
-  public CoinsphException(
-      @JsonProperty("code") int code, @JsonProperty("message") String message) {
+  public CoinsphException(@JsonProperty("code") int code, @JsonProperty("message") String message) {
     super(message); // Pass message to parent
     this.code = code;
   }

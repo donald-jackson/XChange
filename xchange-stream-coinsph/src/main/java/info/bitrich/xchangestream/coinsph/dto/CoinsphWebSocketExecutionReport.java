@@ -5,36 +5,72 @@ import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * WebSocket execution report message from Coins.ph. Example:
+ * {"e":"executionReport","E":1598464861000,"s":"BTCUSDT","c":"myOrder1","S":"BUY","o":"LIMIT","f":"GTC","q":"1.0","p":"9000","X":"FILLED"}
+ */
 @Getter
 @ToString
 public class CoinsphWebSocketExecutionReport {
-  private final String eventType; // e
-  private final long eventTime; // E
-  private final String symbol; // s
-  private final String clientOrderId; // c
-  private final String side; // S
-  private final String orderType; // o
-  private final String timeInForce; // f
-  private final BigDecimal orderQuantity; // q
-  private final BigDecimal orderPrice; // p
-  private final BigDecimal stopPrice; // P
-  private final String executionType; // x
-  private final String orderStatus; // X
-  private final long orderId; // i
-  private final BigDecimal lastExecutedQuantity; // l
-  private final BigDecimal cumulativeFilledQuantity; // z
-  private final BigDecimal lastExecutedPrice; // L
-  private final BigDecimal commissionAmount; // n
-  private final String commissionAsset; // N
-  private final long transactionTime; // T
-  private final long tradeId; // t
-  private final boolean isOrderOnBook; // w (added)
-  private final long orderCreationTime; // O
-  private final String orderRejectReason; // r (added)
-  private final BigDecimal cumulativeQuoteAssetTransactedQuantity; // Z (added)
-  private final BigDecimal lastQuoteAssetTransactedQuantity; // Y (added)
-  private final BigDecimal quoteOrderQuantity; // Q (added)
+  @JsonProperty("e")
+  private String eventType;
 
+  @JsonProperty("E")
+  private long eventTime;
+
+  @JsonProperty("s")
+  private String symbol;
+
+  @JsonProperty("c")
+  private String clientOrderId;
+
+  @JsonProperty("S")
+  private String side;
+
+  @JsonProperty("o")
+  private String orderType;
+
+  @JsonProperty("f")
+  private String timeInForce;
+
+  @JsonProperty("q")
+  private BigDecimal quantity;
+
+  @JsonProperty("p")
+  private BigDecimal price;
+
+  @JsonProperty("X")
+  private String orderStatus;
+
+  @JsonProperty("i")
+  private long orderId;
+
+  @JsonProperty("z")
+  private BigDecimal cumulativeFilledQuantity;
+
+  @JsonProperty("L")
+  private BigDecimal lastExecutedPrice;
+
+  @JsonProperty("l")
+  private BigDecimal lastExecutedQuantity;
+
+  @JsonProperty("n")
+  private BigDecimal commission;
+
+  @JsonProperty("N")
+  private String commissionAsset;
+
+  @JsonProperty("T")
+  private long tradeTime;
+
+  @JsonProperty("t")
+  private long tradeId;
+
+  @JsonProperty("m")
+  private boolean isMarketMaker;
+
+  @JsonProperty("x")
+  private String executionType;
 
   public CoinsphWebSocketExecutionReport(
       @JsonProperty("e") String eventType,
@@ -44,26 +80,19 @@ public class CoinsphWebSocketExecutionReport {
       @JsonProperty("S") String side,
       @JsonProperty("o") String orderType,
       @JsonProperty("f") String timeInForce,
-      @JsonProperty("q") BigDecimal orderQuantity,
-      @JsonProperty("p") BigDecimal orderPrice,
-      @JsonProperty("P") BigDecimal stopPrice,
-      @JsonProperty("x") String executionType,
+      @JsonProperty("q") BigDecimal quantity,
+      @JsonProperty("p") BigDecimal price,
       @JsonProperty("X") String orderStatus,
-      @JsonProperty("r") String orderRejectReason, // Added
       @JsonProperty("i") long orderId,
-      @JsonProperty("l") BigDecimal lastExecutedQuantity,
       @JsonProperty("z") BigDecimal cumulativeFilledQuantity,
       @JsonProperty("L") BigDecimal lastExecutedPrice,
-      @JsonProperty("n") BigDecimal commissionAmount,
+      @JsonProperty("l") BigDecimal lastExecutedQuantity,
+      @JsonProperty("n") BigDecimal commission,
       @JsonProperty("N") String commissionAsset,
-      @JsonProperty("T") long transactionTime,
+      @JsonProperty("T") long tradeTime,
       @JsonProperty("t") long tradeId,
-      @JsonProperty("w") boolean isOrderOnBook, // Added
-      @JsonProperty("O") long orderCreationTime,
-      @JsonProperty("Z") BigDecimal cumulativeQuoteAssetTransactedQuantity, // Added
-      @JsonProperty("Y") BigDecimal lastQuoteAssetTransactedQuantity, // Added
-      @JsonProperty("Q") BigDecimal quoteOrderQuantity // Added
-      ) {
+      @JsonProperty("m") boolean isMarketMaker,
+      @JsonProperty("x") String executionType) {
     this.eventType = eventType;
     this.eventTime = eventTime;
     this.symbol = symbol;
@@ -71,24 +100,18 @@ public class CoinsphWebSocketExecutionReport {
     this.side = side;
     this.orderType = orderType;
     this.timeInForce = timeInForce;
-    this.orderQuantity = orderQuantity;
-    this.orderPrice = orderPrice;
-    this.stopPrice = stopPrice;
-    this.executionType = executionType;
+    this.quantity = quantity;
+    this.price = price;
     this.orderStatus = orderStatus;
-    this.orderRejectReason = orderRejectReason;
     this.orderId = orderId;
-    this.lastExecutedQuantity = lastExecutedQuantity;
     this.cumulativeFilledQuantity = cumulativeFilledQuantity;
     this.lastExecutedPrice = lastExecutedPrice;
-    this.commissionAmount = commissionAmount;
+    this.lastExecutedQuantity = lastExecutedQuantity;
+    this.commission = commission;
     this.commissionAsset = commissionAsset;
-    this.transactionTime = transactionTime;
+    this.tradeTime = tradeTime;
     this.tradeId = tradeId;
-    this.isOrderOnBook = isOrderOnBook;
-    this.orderCreationTime = orderCreationTime;
-    this.cumulativeQuoteAssetTransactedQuantity = cumulativeQuoteAssetTransactedQuantity;
-    this.lastQuoteAssetTransactedQuantity = lastQuoteAssetTransactedQuantity;
-    this.quoteOrderQuantity = quoteOrderQuantity;
+    this.isMarketMaker = isMarketMaker;
+    this.executionType = executionType;
   }
 }
