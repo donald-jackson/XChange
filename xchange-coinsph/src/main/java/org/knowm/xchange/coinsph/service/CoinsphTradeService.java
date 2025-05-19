@@ -83,8 +83,6 @@ public class CoinsphTradeService extends CoinsphTradeServiceRaw implements Trade
 
   @Override
   public boolean cancelOrder(String orderId) throws IOException, CoinsphException {
-    // TODO: Need to find the symbol for this orderId first, or API needs to allow cancel without
-    // symbol
     // For now, assume cancelOrder(CancelOrderParams) is used
     throw new UnsupportedOperationException(
         "cancelOrder by orderId only is not supported. Use CancelOrderParams.");

@@ -10,7 +10,6 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
-
 import org.junit.jupiter.api.*;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.ExchangeSpecification;

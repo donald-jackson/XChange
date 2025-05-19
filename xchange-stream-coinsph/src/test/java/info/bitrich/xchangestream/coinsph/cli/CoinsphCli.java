@@ -85,18 +85,18 @@ public class CoinsphCli {
     //                .build());
     //
     //        System.out.println("Funding Records: " + fundingRecords);
-//
-//    StreamingMarketDataService streamingMarketDataService =
-//        streamingExchange.getStreamingMarketDataService();
-//    streamingMarketDataService
-//        .getOrderBook(CurrencyPair.BTC_PHP)
-//        .doOnEach(s -> System.out.println("Order Book: " + s))
-//        .subscribe();
-//    streamingMarketDataService
-//        .getTicker(CurrencyPair.BTC_PHP)
-//        .doOnEach(s -> System.out.println("Ticker: " + s))
-//        .subscribe();
-//    streamingExchange.connect().blockingAwait();
+    //
+    //    StreamingMarketDataService streamingMarketDataService =
+    //        streamingExchange.getStreamingMarketDataService();
+    //    streamingMarketDataService
+    //        .getOrderBook(CurrencyPair.BTC_PHP)
+    //        .doOnEach(s -> System.out.println("Order Book: " + s))
+    //        .subscribe();
+    //    streamingMarketDataService
+    //        .getTicker(CurrencyPair.BTC_PHP)
+    //        .doOnEach(s -> System.out.println("Ticker: " + s))
+    //        .subscribe();
+    //    streamingExchange.connect().blockingAwait();
   }
 
   @Data

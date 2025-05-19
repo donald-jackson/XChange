@@ -12,8 +12,7 @@ public class CoinsphExchangeInfo {
   private final String timezone;
   private final long serverTime;
   private final List<CoinsphRateLimit> rateLimits;
-  private final List<Object>
-      exchangeFilters; // TODO: Define CoinsphExchangeFilter if structure is known
+  private final List<Object> exchangeFilters;
   private final List<CoinsphSymbol> symbols;
 
   public CoinsphExchangeInfo(

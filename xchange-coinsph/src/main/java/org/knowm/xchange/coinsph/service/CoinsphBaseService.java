@@ -28,13 +28,7 @@ public class CoinsphBaseService extends BaseResilientExchangeService<CoinsphExch
   }
 
   protected CoinsphException handleError(CoinsphException e) {
-    // TODO: Implement specific error handling if needed, e.g., for specific error codes
-    // Or rely on the default exception handling in Rescu which wraps it in IOException
+    // Rely on the default exception handling in Rescu which wraps it in IOException
     return e;
   }
-
-  // Define common rate limiter names, e.g.
-  // public static final String REQUEST_WEIGHT_RATE_LIMITER = "requestWeight";
-  // public static final String ORDERS_RATE_LIMITER = "orders";
-  // These would be configured in CoinsphResilience.java and CoinsphExchange.java
 }

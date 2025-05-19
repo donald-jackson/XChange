@@ -108,6 +108,4 @@ public interface Coinsph {
   List<CoinsphPublicTrade> getTrades(
       @QueryParam("symbol") String symbol, @QueryParam("limit") Integer limit)
       throws IOException, CoinsphException;
-
-  // TODO: Add klines, ticker/price, ticker/bookTicker if needed
 }

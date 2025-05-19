@@ -123,7 +123,6 @@ public final class CoinsphAdapters {
       CurrencyPair pair = toCurrencyPair(symbol.getSymbol());
       if (pair == null) continue; // Skip if symbol parsing fails
 
-      // TODO: Extract fee tiers, min/max amounts, price scale, quantity scale from symbol filters
       // For now, using defaults or placeholders
       InstrumentMetaData pairMetaData =
           new InstrumentMetaData.Builder()
@@ -148,7 +147,7 @@ public final class CoinsphAdapters {
             new CurrencyMetaData(symbol.getQuoteAssetPrecision(), null)); // scale, fee
       }
     }
-    // TODO: Adapt rate limits from exchangeInfo.getRateLimits()
+
     return new ExchangeMetaData(currencyPairs, currencies, null, null, true);
   }
 
@@ -318,8 +317,6 @@ public final class CoinsphAdapters {
             .limitPrice(coinsphOrder.getPrice()) // Price is present for limit orders
             .averagePrice(averagePrice)
             .userReference(coinsphOrder.getClientOrderId());
-    // TODO: Add fees if available in CoinsphOrder DTO
-
     return builder.build();
   }
 
